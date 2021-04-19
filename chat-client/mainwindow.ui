@@ -16,6 +16,9 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Triangular</enum>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <property name="cursor">
     <cursorShape>ArrowCursor</cursorShape>
@@ -107,11 +110,16 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="action_Import"/>
     <addaction name="action_Export"/>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menu_Server">
+    <property name="title">
+     <string>&amp;Server</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menu_Server"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="sizeGripEnabled">
@@ -121,11 +129,6 @@
   <action name="actionExit">
    <property name="text">
     <string>E&amp;xit</string>
-   </property>
-  </action>
-  <action name="action_Import">
-   <property name="text">
-    <string>&amp;Import</string>
    </property>
   </action>
   <action name="action_Export">
