@@ -1,12 +1,5 @@
-from PySide6.QtWidgets import (QApplication, QTableWidget, QTableWidgetItem)
+from PySide6.QtWidgets import QTableWidgetItem
 from PySide6.QtCore import Qt
-
-# python doesn't accept tuples as input,
-# it can't do lambda (a,b): a
-def fst(pair):
-  (a,b) = pair
-  return a
-
 
 test_users = [ ("Hans","10.0.0.1")
              , ("Klaus","10.0.0.2")
@@ -40,5 +33,5 @@ def test_user_table(window):
     table.setItem(i, 2, item_status)
 
 def test_combo_box(window):
-  users = list(map(fst,test_users))
+  users = [x[0] for x in test_users]
   window.userSelect.addItems(users)
