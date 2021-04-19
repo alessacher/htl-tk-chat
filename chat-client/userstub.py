@@ -1,12 +1,6 @@
 from PyQt6.QtWidgets import QTableWidgetItem
 from PyQt6.QtGui import QColor
 
-# python doesn't accept tuples as input,
-# it can't do lambda (a,b): a
-def fst(x):
-  (a,_) = x
-  return a
-
 test_users = [ ("Hans","10.0.0.1")
              , ("Klaus","10.0.0.2")
              , ("Peter","192.168.1.3")
@@ -40,5 +34,5 @@ def test_user_table(window):
 
 # setup userSelect :: QComboBox on the left of the InputBar :: QLineEdit
 def test_combo_box(window):
-  users = list(map(fst,test_users))
+  users = [x[0] for x in test_users]
   window.userSelect.addItems(users)
