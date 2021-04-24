@@ -1,5 +1,10 @@
 #! /usr/bin/python3
 
+"""The Chat Client
+
+This is the chat client with Qt6 frontend.
+"""
+
 import sys
 from PyQt6.QtWidgets import QApplication
 from PyQt6 import QtWidgets, uic
@@ -9,6 +14,12 @@ from userstub import *
 
 @Slot()
 def send_msg():
+  """Send message function
+
+  This function is called when the user presses Enter,
+  to send the message. The function isn't fully implemented
+  at the moment.
+  """
   u = window.userSelect.currentText()
   t = window.InputBar.text()
   print(f"stub sending message '{t}' to '{u}'")
@@ -26,7 +37,7 @@ if __name__ == "__main__":
   script_path_list[-1] = ui_file_name
   ui_path = "/".join(script_path_list)
   if os.path.exists(ui_path):
-    window = uic.loadUi("mainwindow.ui")
+    window = uic.loadUi(ui_path)
   else:
     print(f"Cannot open {ui_path}: No such file or directory")
     sys.exit(1)

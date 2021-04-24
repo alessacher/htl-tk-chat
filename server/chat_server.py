@@ -1,5 +1,11 @@
 #! /usr/bin/python3
 
+"""The Chat Server
+
+This is the Chat server, it is the backbone of the communication
+between the clients.
+"""
+
 import msgpack
 import threading
 import socketserver
@@ -10,14 +16,14 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
     def handle(self):
         """
-        function gets a request offer the socket and prints the message and
+        function gets a request offer from the socket and prints the message and
         the Thread it is in. Then it sends the message back as a response.
         """
         cur_thread = threading.current_thread()
         packer = msgpack.Packer()
         unpacker = msgpack.Unpacker()
-        self.buf = self.request.recv(1024)
-        unpacker.feed(self.buf)
+        buffer = self.request.recv(1024)
+        unpacker.feed(buffer)
         for o in unpacker:
             print("{} wrote:".format(self.client_address[0]))
             print(o,"on Thread:",cur_thread.name)

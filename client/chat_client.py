@@ -1,24 +1,13 @@
 #! /usr/bin/python3
+"""
+Chat client for testing purposes
+"""
 
 import socket
-import msgpack
-import argh
-
-def send_message(ip : str, port : int, message : str):
-    """
-    sends a message to the server and awaits a response
-    """
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        packer = msgpack.Packer()
-        unpacker = msgpack.Unpacker()
-        port = int(port)
-        s.connect((ip, port))
-        s.sendall(packer.pack(message))
-        buf = s.recv(1024)
-        unpacker.feed(buf)
-        for o in unpacker:
-            print('Received', o)
+import client_functions
 
 if __name__ == "__main__":
-    argh.dispatch_command(send_message) # makes the command accessible over the commandline
-    
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(("192.168.3.191", 9999))
+    client_functions.authenticate(sock, "alessacher")
+    sock.close()

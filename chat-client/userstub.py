@@ -1,3 +1,7 @@
+"""
+This is just a stub for users since other functionalities
+are not implemented at the moment.
+"""
 from PyQt6.QtWidgets import QTableWidgetItem
 from PyQt6.QtGui import QColor
 
@@ -7,11 +11,21 @@ test_users = [ ("Hans","10.0.0.1")
              ]
 
 def test_connection(ip):
-  #ping ip stub
+  """Test the Connection
+
+  pings the ip to get the connction status.
+  Not implemented at the moment.
+  """
   return ip[1] == '0'
 
 # setup ChatList :: QTableWidget on the left side of the window
 def test_user_table(window):
+  """
+  Adds test users to the table
+
+  This function adds test users to the QTableWidget
+  on the left side of the window.
+  """
   table = window.chatList
   table.setRowCount(len(test_users))
   table.setColumnCount(len(test_users[0]) + 1)
@@ -34,5 +48,10 @@ def test_user_table(window):
 
 # setup userSelect :: QComboBox on the left of the InputBar :: QLineEdit
 def test_combo_box(window):
+  """Adds test users to the Combo Box
+
+  This function adds test users to the QComboBox
+  on the left side of the InputBar.
+  """
   users = [x[0] for x in test_users]
   window.userSelect.addItems(users)
