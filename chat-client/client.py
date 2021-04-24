@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6 import QtWidgets, uic
 from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot
 import os.path
-from userstub import *
+from userstub import * #beware bad code style
 
 @Slot()
 def send_msg():
@@ -20,11 +20,14 @@ def send_msg():
   to send the message. The function isn't fully implemented
   at the moment.
   """
-  u = window.userSelect.currentText()
+  r = window.userSelect.currentText()
   t = window.InputBar.text()
-  print(f"stub sending message '{t}' to '{u}'")
-  window.msgList.addItem(f"<you> -> {u}: "+t)
-  window.InputBar.clear()
+  if r == "All":
+    print(f"stub broadcasting message '{t}'")
+  else:
+    print(f"stub sending message '{t}' to '{r}'")
+    window.msgList.addItem(f"<you> -> {r}: "+t)
+    window.InputBar.clear()
 
 if __name__ == "__main__":
   app = QApplication(sys.argv)

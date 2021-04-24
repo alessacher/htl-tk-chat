@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>827</width>
-    <height>606</height>
+    <width>826</width>
+    <height>610</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -102,7 +102,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>827</width>
+     <width>826</width>
      <height>21</height>
     </rect>
    </property>
@@ -113,13 +113,13 @@
     <addaction name="action_Export"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menu_Server">
+   <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>&amp;Server</string>
+     <string>&amp;Settings</string>
     </property>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menu_Server"/>
+   <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="sizeGripEnabled">
