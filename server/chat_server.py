@@ -9,6 +9,7 @@ between the clients.
 import msgpack
 import threading
 import socketserver
+import database_functions
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
@@ -37,6 +38,8 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 if __name__ == "__main__":
     HOST, PORT = "0.0.0.0", 9999 # Listening on the arbitrary port 9999
+
+    database = database_functions.Database("chat.db")
 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     with server:
