@@ -3,6 +3,7 @@ Watch the development progress at https://gitea.escpe.net/cc69222/htl-tk-chat
 
 # Build documentation
 To build the documentation run:
+
 ```bash
 doxygen
 cd Documentation/latex
