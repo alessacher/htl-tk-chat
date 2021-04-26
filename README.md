@@ -6,11 +6,13 @@ To build the documentation run:
 
 ```bash
 doxygen
-cd Documentation/latex
+cd documentation/latex
 make
 ```
 
 After this you can open the refman.pdf.
+
+A precompiled version of the documentation can be found [here](./documentation.pdf).
 # Project description
 A Server and client for a self-written chat application.
 The client interface uses Qt 6, the server uses sockets and msgpack.
