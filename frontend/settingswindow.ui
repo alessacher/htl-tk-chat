@@ -49,6 +49,49 @@
       </item>
      </layout>
     </item>
+    <item row="2" column="0" colspan="5">
+     <widget class="QTabWidget" name="MainTabBar">
+      <property name="tabShape">
+       <enum>QTabWidget::Rounded</enum>
+      </property>
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>20</width>
+        <height>20</height>
+       </size>
+      </property>
+      <widget class="QWidget" name="TabInformation">
+       <attribute name="title">
+        <string>Information</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="QTabWidget" name="InformationTabBar">
+          <property name="tabPosition">
+           <enum>QTabWidget::West</enum>
+          </property>
+          <property name="currentIndex">
+           <number>-1</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="TabSettings">
+       <attribute name="title">
+        <string>Settings</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QToolBox" name="SettingsTabBar"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
     <item row="4" column="0" colspan="5">
      <layout class="QHBoxLayout" name="DetectorLayout">
       <item>
@@ -64,7 +107,7 @@
       <item>
        <widget class="QLineEdit" name="InputServerAddress">
         <property name="toolTip">
-         <string/>
+         <string>ip in dotted decimal, port is optional</string>
         </property>
         <property name="statusTip">
          <string/>
@@ -76,13 +119,36 @@
          <string/>
         </property>
         <property name="text">
-         <string>127.0.0.1</string>
+         <string>127.0.0.1:1234</string>
         </property>
         <property name="readOnly">
          <bool>false</bool>
         </property>
         <property name="placeholderText">
-         <string/>
+         <string>ip:port</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="InputUsername">
+        <property name="toolTip">
+         <string>Username</string>
+        </property>
+        <property name="placeholderText">
+         <string>Username</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="InputPassword">
+        <property name="toolTip">
+         <string>Password</string>
+        </property>
+        <property name="echoMode">
+         <enum>QLineEdit::Password</enum>
+        </property>
+        <property name="placeholderText">
+         <string>Password</string>
         </property>
        </widget>
       </item>
@@ -114,56 +180,6 @@
        </widget>
       </item>
      </layout>
-    </item>
-    <item row="2" column="0" colspan="5">
-     <widget class="QTabWidget" name="MainTabBar">
-      <property name="tabShape">
-       <enum>QTabWidget::Rounded</enum>
-      </property>
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <property name="iconSize">
-       <size>
-        <width>20</width>
-        <height>20</height>
-       </size>
-      </property>
-      <widget class="QWidget" name="TabInformation">
-       <attribute name="title">
-        <string>Information</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
-         <widget class="QTabWidget" name="InformationTabBar">
-          <property name="tabPosition">
-           <enum>QTabWidget::West</enum>
-          </property>
-          <property name="currentIndex">
-           <number>-1</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="TabSettings">
-       <attribute name="title">
-        <string>Settings</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0">
-         <widget class="QTabWidget" name="SettingsTabBar">
-          <property name="tabPosition">
-           <enum>QTabWidget::West</enum>
-          </property>
-          <property name="currentIndex">
-           <number>-1</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
     </item>
    </layout>
   </widget>

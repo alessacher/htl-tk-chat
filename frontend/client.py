@@ -20,6 +20,7 @@ import time
 import re # regex
 
 
+
 @Slot()
 def connect_server():
   """Connect to a chat server
@@ -31,9 +32,9 @@ def connect_server():
   The function is a stub.
   """
   ip = settings.InputServerAddress.text()
-  if not re.match('(?:[0-9]{1,3}\.){3}[0-9]{1,3}',ip):
-    # checks for dotted-decimal compliance (Syntax)
-    # no range (0-255) checking (Semantics)
+  if not re.match('((?:\d{1,3}\.){3}\d{1,3})((?:\:\d{1,5})|())',ip):
+    # checks for dotted-decimal : port (optional) compliance -> (Syntax)
+    # no range (0-255) checking -> (Semantics)
 
     # should we include checks for semantics in this stage
     #  or postpone it to the backend and forward the error it will cause ?
@@ -80,8 +81,8 @@ def send_msg():
     print(f"stub broadcasting message '{t}'")
   else:
     print(f"stub sending message '{t}' to '{r}'")
-    window.msgList.addItem(f"<you> -> {r}: "+t)
-    window.InputBar.clear()
+  window.msgList.addItem(f"<you> -> {r}: "+t)
+  window.InputBar.clear()
 
 
 def load_ui_file(filename):
@@ -100,6 +101,7 @@ def load_ui_file(filename):
     print(f"Cannot open {ui_path}: No such file or directory")
     sys.exit(1)
 
+
 if __name__ == "__main__":
   app = QApplication(sys.argv)
   #app.setStyle('Fusion') # only Windows or Fusion
@@ -111,10 +113,7 @@ if __name__ == "__main__":
   window.show()
 
   settings = load_ui_file("settingswindow.ui")
-  settings.ConnectionProgressBar.setValue(0)
   window.actionServer.triggered.connect(settings.show)
-  settings.ButtonStartConnection.pressed.connect(connect_server)
-  settings.ButtonEndConnection.pressed.connect(disconnect_server)
-
+  init_settings_window(settings)
 
   sys.exit(app.exec())

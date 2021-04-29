@@ -31,6 +31,9 @@
       </item>
       <item>
        <widget class="QLineEdit" name="InputBar">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
         <property name="toolTip">
          <string>Enter Text here to send</string>
         </property>
@@ -39,6 +42,9 @@
         </property>
         <property name="autoFillBackground">
          <bool>false</bool>
+        </property>
+        <property name="inputMethodHints">
+         <set>Qt::ImhNone</set>
         </property>
         <property name="echoMode">
          <enum>QLineEdit::Normal</enum>
