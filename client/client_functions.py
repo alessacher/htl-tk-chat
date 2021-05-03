@@ -27,3 +27,44 @@ def authenticate(sock, username : str):
     }
     packer = msgpack.Packer()
     sock.sendall(packer.pack(message)) 
+
+def text_message(sock, text : str, author : str, recipient : str = "all"):
+    """Text Message function
+
+    Takes a socket, text, author and recipient as arguments and
+    sends it to the server.
+    """
+    message = {
+        "type" : "text",
+        "content" : text,
+        "author" : author,
+        "recipient" : recipient,
+        "time" : time.time()
+    }
+    packer = msgpack.Packer()
+    sock.sendall(packer.pack(message))
+
+def get_message(sock):
+    """Get Message function
+
+    Takes a socket argument and returns the message in the pipe.
+    """
+    unpacker = msgpack.Unpacker()
+    buffer = sock.recv(4096)
+    unpacker.feed(buffer)
+    for object in unpacker:
+        return object
+
+
+def close_connection(sock):
+    """Close function
+
+    Closes the server connection and notifies the server about it.
+    """
+    message = {
+        "type" : "close",
+        "time" : time.time()
+    }
+    packer = msgpack.Packer()
+    sock.sendall(packer.pack(message))
+    sock.close()
