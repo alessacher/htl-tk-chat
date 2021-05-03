@@ -292,3 +292,5 @@ TSWLatexianTemp*
 *.pyc
 __pycache__
 
+# server log file
+chatserver.log

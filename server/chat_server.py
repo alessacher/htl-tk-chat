@@ -10,6 +10,8 @@ import msgpack
 import threading
 import socketserver
 import time
+import logging
+import logging.config
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
@@ -21,21 +23,29 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         the Thread it is in. It handles the authentication and the messages.
         At the moment it just broadcasts the messages
         """
+        logging.info(f"Started new Thread")
+        logging.debug(f"New Thread is {threading.current_thread}")
+        logging.info(f"Got new connection from {self.client_address}.")
         while True:
             buffer = self.request.recv(4096)
             message = unpack_message(buffer)
             if message == None:
+                logging.error("Client disconnected forcefully")
                 self.server.connected_clients.remove(self.request)
                 return
             elif message["type"] == "auth":
+                logging.debug(f"Got auth request from {self.client_address}")
+                logging.info(f"New client with username: {message['user']}")
                 self.server.connected_clients.append(self.request)
                 for client in self.server.connected_clients:
                     text_message(client, f"{message['user']} logged in", "SERVER")
             elif message["type"] == "text":
+                logging.debug(f"Got text message request from {self.client_address}")
                 for client in self.server.connected_clients:
                     text_message(client, message["content"], message["author"], message["recipient"])
             elif message["type"] == "close":
                 self.server.connected_clients.remove(self.request)
+                logging.info(f"Closing connection from {self.client_address}")
                 return
 
 
@@ -68,8 +78,12 @@ def text_message(sock, text : str, author : str, recipient : str = "all"):
     }
     packer = msgpack.Packer()
     sock.sendall(packer.pack(message))
+    logging.debug(f"Send message to client : {sock.getpeername()}")
 
 if __name__ == "__main__":
+    logging.config.fileConfig("logger.conf")
+    logging.info("Logging Ready")
+
     HOST, PORT = "0.0.0.0", 9999 # Listening on the arbitrary port 9999
 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
@@ -78,6 +92,7 @@ if __name__ == "__main__":
 
         server_thread.setDaemon(True) # telling the thread to run in the background
         server_thread.start()
+        logging.info("Started Server Thread")
 
         while True:
             pass
