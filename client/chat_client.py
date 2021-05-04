@@ -6,10 +6,36 @@ CLI bassed Chat Client
 import socket
 import client_functions
 import threading
+import ssl
+import configparser
+import os
 class Client:
     """Intializes the Socket which is available as self.sock"""
     def __init__(self, ip : str, port : int):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect((ip,port))
+        self.sock.setblocking(True)
+
+class SSL_Client:
+    """The same Client but with SSl support"""
+    def __init__(
+        self,
+        ip : str,
+        port : int,
+        certfile : str,
+        ssl_version):
+
+        dir = os.path.dirname(__file__)
+        self.__certfile = os.path.join(dir, certfile)
+
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock = ssl.wrap_socket(
+            self.sock,
+            ca_certs=self.__certfile,
+            cert_reqs=ssl.CERT_REQUIRED,
+            ssl_version=ssl_version
+        )
+
         self.sock.connect((ip,port))
         self.sock.setblocking(True)
 
@@ -53,8 +79,30 @@ if __name__ == "__main__":
 
     shutdown = False
 
+    dir = os.path.dirname(__file__)
+
+    config_file = os.path.join(dir, "client.conf")
+    config = configparser.ConfigParser()
+
+    if os.path.exists(config_file):
+        config.read(config_file)
+    
+    else:
+        config["SSL"] = {
+            "enable_ssl" : False
+        }
+
     try:
-        my_client = Client(host, port)
+        if config["SSL"].getboolean("enable_ssl"):
+            my_client = SSL_Client(
+                host,
+                port,
+                config["SSL"]["certfile"],
+                eval("".join(("ssl.PROTOCOL_",config["SSL"]["ssl_version"])))
+                )
+        else:    
+            my_client = Client(host, port)
+
         user = input("username: ")
 
         client_functions.authenticate(my_client.sock, user)

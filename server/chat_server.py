@@ -12,7 +12,9 @@ import socketserver
 import time
 import logging
 import logging.config
-
+import ssl
+import os
+import configparser
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
     Handles the request in a thread
@@ -26,6 +28,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         logging.info(f"Started new Thread")
         logging.debug(f"New Thread is {threading.current_thread}")
         logging.info(f"Got new connection from {self.client_address}.")
+
         while True:
             buffer = self.request.recv(4096)
             message = unpack_message(buffer)
@@ -48,7 +51,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         text_message(
                             self.request,
                             f"Username : {message['user']} already taken",
-                            "SERVER")
+                            "SERVER"
+                            )
                         self.request.close()
                         return
 
@@ -63,7 +67,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     text_message(
                         client["socket"],
                         f"{message['user']} logged in",
-                        "SERVER")
+                        "SERVER"
+                        )
 
             elif message["type"] == "text":
                 logging.debug(f"Got text message request from {self.client_address}")
@@ -73,7 +78,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                             client["socket"],
                             message["content"],
                             message["author"],
-                            message["recipient"])
+                            message["recipient"]
+                            )
                 else:
                     logging.debug(f"""New private message to
                                     {message['recipient']}""")
@@ -83,7 +89,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                                 client["socket"],
                                 message["content"],
                                 message["author"],
-                                message["recipient"])
+                                message["recipient"]
+                                )
                             break
                     else:
                         logging.warning(f"{message['recipient']} unavailable")
@@ -91,7 +98,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                             self.request,
                             "Private Message was not delivered. Reason: user unavailable",
                             "SERVER",
-                            self.user)
+                            self.user
+                            )
 
             elif message["type"] == "close":
                 self.server.connected_clients.remove(
@@ -102,14 +110,52 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 logging.info(f"Closing connection from {self.client_address}")
                 return
 
+class SSL_TCPServer(socketserver.TCPServer):
+    """A TCP Server with SSL support"""
+    def __init__(
+        self,
+        certfile : str,
+        keyfile : str,
+        server_address : tuple,
+        RequestHandlerClass,
+        ssl_version,
+        bind_and_activate=True
+        ):
+
+        socketserver.TCPServer.__init__(
+            self,
+            server_address,
+            RequestHandlerClass,
+            bind_and_activate
+            )
+        
+        dir = os.path.dirname(__file__)
+        self.__certfile = os.path.join(dir, certfile)
+        self.__keyfile = os.path.join(dir, keyfile)
+
+        self.socket = ssl.wrap_socket(
+            self.socket,
+            keyfile=self.__keyfile,
+            certfile=self.__certfile,
+            ssl_version=ssl_version
+            )
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     """
     TCPServer with threading support.
     Spawns a new Thread for every response.
     """
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.connected_clients = []
+class SSL_ThreadedTCPServer(socketserver.ThreadingMixIn, SSL_TCPServer):
+    """
+    SSL_TCPServer with threading support.
+    Spawns a new Thread for every response.
+    Has SSL support
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.connected_clients = []
 
 def unpack_message(message):
@@ -136,13 +182,51 @@ def text_message(sock, text : str, author : str, recipient : str = "all"):
     logging.debug(f"Send message to client : {sock.getpeername()}")
 
 if __name__ == "__main__":
-    logging.config.fileConfig("logger.conf")
+    dir = os.path.dirname(__file__)
+
+    log_conf = os.path.join(dir, "logger.conf")
+    logging.config.fileConfig(log_conf)
     logging.info("Logging Ready")
 
-    # Listening on the arbitrary port 9999
-    HOST, PORT = "0.0.0.0", 9999
+    config_file = os.path.join(dir, "server.conf")
+    config = configparser.ConfigParser()
 
-    server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
+    if os.path.exists(config_file):
+        logging.info("Loading \"server.conf\" file")
+        config.read(config_file)
+    else:
+        logging.warning("Using default config")
+        config["SERVER"] = {
+            "listen_address" : "0.0.0.0",
+            "listen_port" : 9999
+        }
+
+        config["SSL"] = {
+            "enable_ssl" : False
+        }
+
+    HOST = config["SERVER"]["listen_address"]
+    PORT = int(config["SERVER"]["listen_port"])
+
+    logging.info(f"Server serving at {HOST} on port {PORT}")
+
+    if config["SSL"].getboolean("enable_ssl"):
+        logging.info("SSL ENABLED")
+        server = SSL_ThreadedTCPServer(
+            config["SSL"]["certfile"],
+            config["SSL"]["keyfile"],
+            (HOST, PORT),
+            ThreadedTCPRequestHandler,
+            eval("".join(("ssl.PROTOCOL_",config["SSL"]["ssl_version"])))
+            )
+
+    else:
+        logging.info("SSL DISABLED")
+        server = ThreadedTCPServer(
+            (HOST,PORT),
+            ThreadedTCPRequestHandler
+        )
+
     with server:
         # creating main server thread
         server_thread = threading.Thread(target=server.serve_forever)
