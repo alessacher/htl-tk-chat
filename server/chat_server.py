@@ -29,22 +29,58 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         while True:
             buffer = self.request.recv(4096)
             message = unpack_message(buffer)
+
             if message == None:
                 logging.error("Client disconnected forcefully")
-                self.server.connected_clients.remove(self.request)
+                self.server.connected_clients.remove(
+                    {
+                    "socket" : self.request, 
+                    "user"   : self.user
+                    }
+                    )
                 return
+
             elif message["type"] == "auth":
                 logging.debug(f"Got auth request from {self.client_address}")
                 logging.info(f"New client with username: {message['user']}")
-                self.server.connected_clients.append(self.request)
                 for client in self.server.connected_clients:
-                    text_message(client, f"{message['user']} logged in", "SERVER")
+                    if client["user"] == message["user"]:
+                        text_message(self.request, f"Username : {message['user']} already taken", "SERVER")
+                        self.request.close()
+                        return
+
+                self.server.connected_clients.append(
+                    {
+                    "socket" : self.request, 
+                    "user"   : message["user"]
+                    }
+                    )
+                self.user = message["user"]
+                for client in self.server.connected_clients:
+                    text_message(client["socket"], f"{message['user']} logged in", "SERVER")
+
             elif message["type"] == "text":
                 logging.debug(f"Got text message request from {self.client_address}")
-                for client in self.server.connected_clients:
-                    text_message(client, message["content"], message["author"], message["recipient"])
+                if message["recipient"] == "all":   
+                    for client in self.server.connected_clients:
+                        text_message(client["socket"], message["content"], message["author"], message["recipient"])
+                else:
+                    logging.debug(f"New private message to {message['recipient']}")
+                    for client in self.server.connected_clients:
+                        if client["user"] == message["recipient"]:
+                            text_message(client["socket"], message["content"], message["author"], message["recipient"])
+                            break
+                    else:
+                        logging.warning(f"{message['recipient']} unavailable")
+                        text_message(self.request, "Private Message was not delivered. Reason: user unavailable", "SERVER", self.user)
+
             elif message["type"] == "close":
-                self.server.connected_clients.remove(self.request)
+                self.server.connected_clients.remove(
+                    {
+                    "socket" : self.request, 
+                    "user"   : self.user
+                    }
+                    )
                 logging.info(f"Closing connection from {self.client_address}")
                 return
 

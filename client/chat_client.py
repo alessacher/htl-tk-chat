@@ -26,7 +26,10 @@ def main_read_loop(sock):
             shutdown = True
         elif message["type"] == "text":
             if message["author"] != user:
-                print(f"{message['author']}: {message['content']}")
+                if message["recipient"] == "all":
+                    print(f"{message['author']}: {message['content']}")
+                else:
+                    print(f"{message['author']} -> {message['recipient']}: {message['content']}")
     return
 
 def main_write_loop(sock, user):
@@ -39,6 +42,8 @@ def main_write_loop(sock, user):
         if buffer == "!exit":
             client_functions.close_connection(sock)
             shutdown = True
+        elif buffer.startswith("!msg"):
+            client_functions.text_message(sock, " ".join(buffer.split(" ")[2:]), user, buffer.split(" ")[1])
         else:
             client_functions.text_message(sock, buffer, user)
     return
