@@ -33,7 +33,8 @@ class Database:
         """
 
         #sql = "CREATE TABLE IF NOT EXISTS ? ?"
-        sql = "CREATE TABLE IF NOT EXISTS message_history (message text, author text, receipient text, date integer)"
+        sql = """CREATE TABLE IF NOT EXISTS message_history 
+                (message text, author text, receipient text, date integer)"""
 
         try:
             con = sqlite3.connect(self.db)

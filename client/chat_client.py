@@ -7,18 +7,14 @@ import socket
 import client_functions
 import threading
 class Client:
-    """
-    Intializes the Socket which is available as self.sock
-    """
+    """Intializes the Socket which is available as self.sock"""
     def __init__(self, ip : str, port : int):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((ip,port))
         self.sock.setblocking(True)
 
 def main_read_loop(sock):
-    """
-    Reads the socket in a loop
-    """
+    """Reads the socket in a loop"""
     global shutdown
     while not shutdown:
         message = client_functions.get_message(sock)
@@ -33,9 +29,7 @@ def main_read_loop(sock):
     return
 
 def main_write_loop(sock, user):
-    """
-    Sends messages in a loop
-    """
+    """Sends messages in a loop"""
     global shutdown
     while not shutdown:
         buffer = input()
@@ -43,7 +37,11 @@ def main_write_loop(sock, user):
             client_functions.close_connection(sock)
             shutdown = True
         elif buffer.startswith("!msg"):
-            client_functions.text_message(sock, " ".join(buffer.split(" ")[2:]), user, buffer.split(" ")[1])
+            client_functions.text_message(
+                sock,
+                " ".join(buffer.split(" ")[2:]),
+                user,
+                buffer.split(" ")[1])
         else:
             client_functions.text_message(sock, buffer, user)
     return
@@ -61,8 +59,12 @@ if __name__ == "__main__":
 
         client_functions.authenticate(my_client.sock, user)
 
-        read_thread = threading.Thread(target=main_read_loop, args=(my_client.sock,))
-        write_thread = threading.Thread(target=main_write_loop, args=(my_client.sock, user,))
+        read_thread = threading.Thread(
+            target=main_read_loop,
+            args=(my_client.sock,))
+        write_thread = threading.Thread(
+            target=main_write_loop,
+            args=(my_client.sock, user,))
 
         read_thread.start()
         write_thread.start()
