@@ -17,7 +17,7 @@ class Client:
         self.sock.setblocking(True)
 
 class SSL_Client:
-    """The same Client but with SSl support"""
+    """The same Client but with SSL support"""
     def __init__(
         self,
         ip : str,
@@ -70,27 +70,34 @@ def main_write_loop(sock, user):
                 buffer.split(" ")[1])
         else:
             client_functions.text_message(sock, buffer, user)
-    return
             
+    return
+
 
 if __name__ == "__main__":
-    host = input("Server address: ")
-    port = int(input("Server port: "))
 
     shutdown = False
 
     dir = os.path.dirname(__file__)
-
     config_file = os.path.join(dir, "client.conf")
     config = configparser.ConfigParser()
 
     if os.path.exists(config_file):
         config.read(config_file)
-    
+
     else:
         config["SSL"] = {
             "enable_ssl" : False
         }
+
+    if config.has_section("frontend")
+        host = config.getstring("frontend","host")
+        port = config.getstring("frontend","port")
+        user = config.getstring("frontend","user")
+    else: # standalone, cli client
+        host = input("Server address: ")
+        port = int(input("Server port: "))
+        user = input("username: ")
 
     try:
         if config["SSL"].getboolean("enable_ssl"):
@@ -100,10 +107,10 @@ if __name__ == "__main__":
                 config["SSL"]["certfile"],
                 eval("".join(("ssl.PROTOCOL_",config["SSL"]["ssl_version"])))
                 )
-        else:    
+        else:
             my_client = Client(host, port)
 
-        user = input("username: ")
+
 
         client_functions.authenticate(my_client.sock, user)
 
@@ -119,9 +126,8 @@ if __name__ == "__main__":
 
         read_thread.join()
         write_thread.join()
-                    
+
     except KeyboardInterrupt:
         shutdown = True
         client_functions.close_connection(my_client.sock)
         exit()
-    

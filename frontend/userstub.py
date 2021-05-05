@@ -2,6 +2,8 @@
 This is just a stub for users since other functionalities
 are not implemented at the moment.
 """
+import logging
+import logging.config
 from PyQt6.QtWidgets import QTableWidgetItem
 from PyQt6.QtGui import QColor
 
@@ -21,8 +23,7 @@ def test_connection(ip):
 
 # setup ChatList :: QTableWidget on the left side of the window
 def test_user_table(window):
-  """
-  Adds test users to the table
+  """Adds test users to the table
 
   This function adds test users to the QTableWidget
   on the left side of the window.

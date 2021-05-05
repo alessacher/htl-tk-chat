@@ -7,11 +7,14 @@ This is the chat client with Qt6 frontend.
 
 import sys
 import os.path
+import logging
+import logging.config
 from PyQt6.QtWidgets import QApplication
-from PyQt6 import QtWidgets, uic # .ui files and their content
+from PyQt6 import uic # .ui files and their content
 from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
 from PyQt6.QtCore import Qt
-from PyQt6 import QtGui # cursor shapes
+from PyQt6.QtGui import * # cursor shapes
+from PyQt6.QtWidgets import *
 
 from userstub import *
 from settingsstub import *
@@ -38,9 +41,9 @@ def connect_server():
 
     # should we include checks for semantics in this stage
     #  or postpone it to the backend and forward the error it will cause ?
-    print("ip adress Syntax is incorrect !")
+    logging.error("ip adress Syntax is incorrect !")
   else :
-    print(f"stub connecting to server '{ip}'")
+    logging.info(f"stub connecting to server '{ip}'")
     settings.InputServerAddress.setReadOnly(True)
     # setting cursor does not take effect immediately but on function exit ?!
     # unusable in current form as cursor starts showing when connection is finished
@@ -62,7 +65,7 @@ def disconnect_server():
   The function is a stub.
   """
   ip = settings.InputServerAddress.text()
-  print(f"stub disconnecting from server '{ip}'")
+  logging.info(f"stub disconnecting from server '{ip}'")
   settings.ConnectionProgressBar.setValue(0)
   settings.InputServerAddress.setReadOnly(False)
 
@@ -78,9 +81,9 @@ def send_msg():
   r = window.userSelect.currentText()
   t = window.InputBar.text()
   if r == "All":
-    print(f"stub broadcasting message '{t}'")
+    logging.info(f"stub broadcasting message '{t}'")
   else:
-    print(f"stub sending message '{t}' to '{r}'")
+    logging.info(f"stub sending message '{t}' to '{r}'")
   window.msgList.addItem(f"<you> -> {r}: "+t)
   window.InputBar.clear()
 
@@ -90,19 +93,22 @@ def load_ui_file(filename):
 
   Path independent loader function for QTCreators .ui files
   """
-  ui_file_name = filename
   script_path = os.path.realpath(__file__)
   script_path_list = script_path.split("/")
-  script_path_list[-1] = ui_file_name
+  script_path_list[-1] = filename
   ui_path = "/".join(script_path_list)
   if os.path.exists(ui_path):
     return uic.loadUi(ui_path)
   else:
-    print(f"Cannot open {ui_path}: No such file or directory")
+    logging.error(f"Cannot open {ui_path} to load {filename}")
     sys.exit(1)
 
 
 if __name__ == "__main__":
+  log_conf = os.path.join(dir, "logger.conf")
+  logging.config.fileConfig(log_conf)
+  logging.info("Client Logging ready")
+
   app = QApplication(sys.argv)
   #app.setStyle('Fusion') # only Windows or Fusion
 
@@ -110,6 +116,7 @@ if __name__ == "__main__":
   window.InputBar.returnPressed.connect(send_msg)
   test_user_table(window)
   test_combo_box(window)
+  window.actionExit.triggered.connect(app.quit)
   window.show()
 
   settings = load_ui_file("settingswindow.ui")

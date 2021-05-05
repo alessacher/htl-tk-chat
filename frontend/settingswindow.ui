@@ -18,7 +18,7 @@
     <item row="6" column="0" colspan="5">
      <layout class="QHBoxLayout" name="MainButtonsLayout">
       <item>
-       <widget class="QToolButton" name="ButtonSaveProfile">
+       <widget class="QPushButton" name="ButtonSaveProfile">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -27,9 +27,6 @@
         </property>
         <property name="text">
          <string>Save Profile</string>
-        </property>
-        <property name="popupMode">
-         <enum>QToolButton::MenuButtonPopup</enum>
         </property>
        </widget>
       </item>
@@ -55,7 +52,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="iconSize">
        <size>
@@ -107,7 +104,7 @@
       <item>
        <widget class="QLineEdit" name="InputServerAddress">
         <property name="toolTip">
-         <string>ip in dotted decimal, port is optional</string>
+         <string>IP-Address of the server in dotted decimal, Port is optional</string>
         </property>
         <property name="statusTip">
          <string/>
@@ -132,7 +129,7 @@
       <item>
        <widget class="QLineEdit" name="InputUsername">
         <property name="toolTip">
-         <string>Username</string>
+         <string>Your Username to connect to the chat-server</string>
         </property>
         <property name="placeholderText">
          <string>Username</string>
@@ -142,7 +139,7 @@
       <item>
        <widget class="QLineEdit" name="InputPassword">
         <property name="toolTip">
-         <string>Password</string>
+         <string>Your Password for your User</string>
         </property>
         <property name="echoMode">
          <enum>QLineEdit::Password</enum>
@@ -165,7 +162,7 @@
          <cursorShape>ArrowCursor</cursorShape>
         </property>
         <property name="toolTip">
-         <string/>
+         <string>Establish a Connection to the Server with the provided informaiton</string>
         </property>
         <property name="text">
          <string>Connect</string>
@@ -174,8 +171,11 @@
       </item>
       <item>
        <widget class="QPushButton" name="ButtonEndConnection">
+        <property name="toolTip">
+         <string>Disconnect from the Serve, abort connection</string>
+        </property>
         <property name="text">
-         <string>Cancel</string>
+         <string>Disconnect</string>
         </property>
        </widget>
       </item>

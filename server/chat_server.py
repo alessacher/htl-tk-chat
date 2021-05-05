@@ -37,7 +37,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 logging.error("Client disconnected forcefully")
                 self.server.connected_clients.remove(
                     {
-                    "socket" : self.request, 
+                    "socket" : self.request,
                     "user"   : self.user
                     }
                     )
@@ -58,7 +58,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
                 self.server.connected_clients.append(
                     {
-                    "socket" : self.request, 
+                    "socket" : self.request,
                     "user"   : message["user"]
                     }
                     )
@@ -72,7 +72,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
             elif message["type"] == "text":
                 logging.debug(f"Got text message request from {self.client_address}")
-                if message["recipient"] == "all":   
+                if message["recipient"] == "all":
                     for client in self.server.connected_clients:
                         text_message(
                             client["socket"],
@@ -104,7 +104,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             elif message["type"] == "close":
                 self.server.connected_clients.remove(
                     {
-                    "socket" : self.request, 
+                    "socket" : self.request,
                     "user"   : self.user
                     })
                 logging.info(f"Closing connection from {self.client_address}")
@@ -128,7 +128,7 @@ class SSL_TCPServer(socketserver.TCPServer):
             RequestHandlerClass,
             bind_and_activate
             )
-        
+
         dir = os.path.dirname(__file__)
         self.__certfile = os.path.join(dir, certfile)
         self.__keyfile = os.path.join(dir, keyfile)
@@ -230,7 +230,7 @@ if __name__ == "__main__":
     with server:
         # creating main server thread
         server_thread = threading.Thread(target=server.serve_forever)
-        
+
         # telling the thread to run in the background
         server_thread.setDaemon(True)
         server_thread.start()
