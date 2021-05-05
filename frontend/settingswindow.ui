@@ -31,16 +31,16 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="ButtonDeleteProfile">
+       <widget class="QPushButton" name="ButtonLoadProfile">
         <property name="text">
-         <string>Delete Profile</string>
+         <string>Load Profile</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="ButtonLoadProfile">
+       <widget class="QPushButton" name="ButtonDeleteProfile">
         <property name="text">
-         <string>Load Profile</string>
+         <string>Delete Profile</string>
         </property>
        </widget>
       </item>
@@ -65,15 +65,121 @@
         <string>Information</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QCheckBox" name="checkBox_2">
+            <property name="text">
+             <string>CheckBox</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="5" column="0">
+         <layout class="QHBoxLayout" name="AuthLayout">
+          <item>
+           <widget class="QLabel" name="ConncetionLabel">
+            <property name="text">
+             <string>Connect to server</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="InputServerAddress">
+            <property name="toolTip">
+             <string>IP-Address of the server in dotted decimal, Port is optional</string>
+            </property>
+            <property name="statusTip">
+             <string/>
+            </property>
+            <property name="whatsThis">
+             <string/>
+            </property>
+            <property name="inputMask">
+             <string/>
+            </property>
+            <property name="text">
+             <string>127.0.0.1:1234</string>
+            </property>
+            <property name="readOnly">
+             <bool>false</bool>
+            </property>
+            <property name="placeholderText">
+             <string>ip:port</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="InputUsername">
+            <property name="toolTip">
+             <string>Your Username to connect to the chat-server</string>
+            </property>
+            <property name="placeholderText">
+             <string>Username</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="InputPassword">
+            <property name="toolTip">
+             <string>Your Password for your User</string>
+            </property>
+            <property name="echoMode">
+             <enum>QLineEdit::Password</enum>
+            </property>
+            <property name="placeholderText">
+             <string>Password</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="ConnectionProgressBar">
+            <property name="value">
+             <number>24</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="ButtonStartConnection">
+            <property name="cursor">
+             <cursorShape>ArrowCursor</cursorShape>
+            </property>
+            <property name="toolTip">
+             <string>Establish a Connection to the Server with the provided informaiton</string>
+            </property>
+            <property name="text">
+             <string>Connect</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="ButtonEndConnection">
+            <property name="toolTip">
+             <string>Disconnect from the Serve, abort connection</string>
+            </property>
+            <property name="text">
+             <string>Disconnect</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item row="0" column="0">
-         <widget class="QTabWidget" name="InformationTabBar">
-          <property name="tabPosition">
-           <enum>QTabWidget::West</enum>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
           </property>
-          <property name="currentIndex">
-           <number>-1</number>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
           </property>
-         </widget>
+         </spacer>
         </item>
        </layout>
       </widget>
@@ -88,98 +194,6 @@
        </layout>
       </widget>
      </widget>
-    </item>
-    <item row="4" column="0" colspan="5">
-     <layout class="QHBoxLayout" name="DetectorLayout">
-      <item>
-       <widget class="QLabel" name="ConncetionLabel">
-        <property name="text">
-         <string>Connect to server</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="InputServerAddress">
-        <property name="toolTip">
-         <string>IP-Address of the server in dotted decimal, Port is optional</string>
-        </property>
-        <property name="statusTip">
-         <string/>
-        </property>
-        <property name="whatsThis">
-         <string/>
-        </property>
-        <property name="inputMask">
-         <string/>
-        </property>
-        <property name="text">
-         <string>127.0.0.1:1234</string>
-        </property>
-        <property name="readOnly">
-         <bool>false</bool>
-        </property>
-        <property name="placeholderText">
-         <string>ip:port</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="InputUsername">
-        <property name="toolTip">
-         <string>Your Username to connect to the chat-server</string>
-        </property>
-        <property name="placeholderText">
-         <string>Username</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="InputPassword">
-        <property name="toolTip">
-         <string>Your Password for your User</string>
-        </property>
-        <property name="echoMode">
-         <enum>QLineEdit::Password</enum>
-        </property>
-        <property name="placeholderText">
-         <string>Password</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QProgressBar" name="ConnectionProgressBar">
-        <property name="value">
-         <number>24</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="ButtonStartConnection">
-        <property name="cursor">
-         <cursorShape>ArrowCursor</cursorShape>
-        </property>
-        <property name="toolTip">
-         <string>Establish a Connection to the Server with the provided informaiton</string>
-        </property>
-        <property name="text">
-         <string>Connect</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="ButtonEndConnection">
-        <property name="toolTip">
-         <string>Disconnect from the Serve, abort connection</string>
-        </property>
-        <property name="text">
-         <string>Disconnect</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </item>
    </layout>
   </widget>

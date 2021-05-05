@@ -81,8 +81,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                             message["recipient"]
                             )
                 else:
-                    logging.debug(f"""New private message to
-                                    {message['recipient']}""")
+                    logging.debug(f"""New private message to {message['recipient']}""")
                     for client in self.server.connected_clients:
                         if client["user"] == message["recipient"]:
                             text_message(
@@ -179,7 +178,7 @@ def text_message(sock, text : str, author : str, recipient : str = "all"):
     }
     packer = msgpack.Packer()
     sock.sendall(packer.pack(message))
-    logging.debug(f"Send message to client : {sock.getpeername()}")
+    logging.debug(f"Send message '{text}' to client : {sock.getpeername()}")
 
 if __name__ == "__main__":
     dir = os.path.dirname(__file__)

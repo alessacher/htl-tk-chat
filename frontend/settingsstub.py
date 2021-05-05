@@ -17,6 +17,7 @@ import configparser
 dir = os.path.dirname(__file__)
 config_file = os.path.join(dir, "../client/client.conf")
 config = configparser.ConfigParser() # client config file
+config.read(config_file)
 
 @Slot()
 def save_frontend_config(settings):
@@ -46,12 +47,13 @@ def delete_frontend_config(settings):
 def load_frontend_config(settings):
   """Load the values stored in the .config file for frontend settings"""
   logging.info(f"Loading .config Profile")
-  if(config.has_section("frontend") and length(config.get("frontend")) > 2 ):
+  if(config.has_section("frontend") ):
     host = config.get("frontend", "host") + ':' + config.get("frontend", "port")
     user = config.get("frontend", "user")
     settings.InputServerAddress.setText(host)
     settings.InputUsername.setText(user)
-  else: logging.error("No or empty frontend section found !")
+  else: 
+    logging.error("No frontend section found !")
 
 
 @Slot()

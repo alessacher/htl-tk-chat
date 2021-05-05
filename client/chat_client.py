@@ -9,6 +9,7 @@ import threading
 import ssl
 import configparser
 import os
+import sys
 class Client:
     """Intializes the Socket which is available as self.sock"""
     def __init__(self, ip : str, port : int):
@@ -50,8 +51,10 @@ def main_read_loop(sock):
             if message["author"] != user:
                 if message["recipient"] == "all":
                     print(f"{message['author']}: {message['content']}")
+                    #display_message(message['author'],message['content'])
                 else:
                     print(f"{message['author']} -> {message['recipient']}: {message['content']}")
+                    #display_message(message['author'],message['recipient'],message['content'])
     return
 
 def main_write_loop(sock, user):
@@ -74,60 +77,67 @@ def main_write_loop(sock, user):
     return
 
 
-if __name__ == "__main__":
+shutdown = False
 
-    shutdown = False
+dir = os.path.dirname(__file__)
+config_file = os.path.join(dir, "client.conf")
+config = configparser.ConfigParser()
 
-    dir = os.path.dirname(__file__)
-    config_file = os.path.join(dir, "client.conf")
-    config = configparser.ConfigParser()
+if os.path.exists(config_file):
+    config.read(config_file)
 
-    if os.path.exists(config_file):
-        config.read(config_file)
+else:
+    config["SSL"] = {
+        "enable_ssl" : False
+    }
 
-    else:
-        config["SSL"] = {
-            "enable_ssl" : False
-        }
+if len(sys.argv) == 1 and config.has_section("frontend"):
+    host = config.get("frontend","host")
+    port = int(config.get("frontend","port"))
+    user = config.get("frontend","user")
+elif len(sys.argv) == 4 : 
+    host = sys.argv[1]
+    port = int(sys.argv[2])
+    user = sys.argv[3]
+else: # standalone, cli client
+    host = input("Server address: ")
+    port = int(input("Server port: "))
+    user = input("username: ")
+    
+print(f"got {user}@{host}:{port}")
 
-    if config.has_section("frontend")
-        host = config.getstring("frontend","host")
-        port = config.getstring("frontend","port")
-        user = config.getstring("frontend","user")
-    else: # standalone, cli client
-        host = input("Server address: ")
-        port = int(input("Server port: "))
-        user = input("username: ")
+if config["SSL"].getboolean("enable_ssl"):
+    my_client = SSL_Client(
+        host,
+        port,
+        config["SSL"]["certfile"],
+        eval("".join(("ssl.PROTOCOL_",config["SSL"]["ssl_version"])))
+        )
+else:
+    my_client = Client(host, port)
 
-    try:
-        if config["SSL"].getboolean("enable_ssl"):
-            my_client = SSL_Client(
-                host,
-                port,
-                config["SSL"]["certfile"],
-                eval("".join(("ssl.PROTOCOL_",config["SSL"]["ssl_version"])))
-                )
-        else:
-            my_client = Client(host, port)
+def init_backend():
+        try:
 
+            client_functions.authenticate(my_client.sock, user)
 
+            read_thread = threading.Thread(
+                target=main_read_loop,
+                args=(my_client.sock,))
+            write_thread = threading.Thread(
+                target=main_write_loop,
+                args=(my_client.sock, user,))
 
-        client_functions.authenticate(my_client.sock, user)
+            read_thread.start()
+            write_thread.start()
 
-        read_thread = threading.Thread(
-            target=main_read_loop,
-            args=(my_client.sock,))
-        write_thread = threading.Thread(
-            target=main_write_loop,
-            args=(my_client.sock, user,))
+            read_thread.join()
+            write_thread.join()
 
-        read_thread.start()
-        write_thread.start()
+        except KeyboardInterrupt:
+            shutdown = True
+            client_functions.close_connection(my_client.sock)
+            exit()
 
-        read_thread.join()
-        write_thread.join()
-
-    except KeyboardInterrupt:
-        shutdown = True
-        client_functions.close_connection(my_client.sock)
-        exit()
+if __name__ == '__main__':
+    init_backend()

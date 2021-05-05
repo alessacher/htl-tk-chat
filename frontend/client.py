@@ -9,6 +9,8 @@ import sys
 import os.path
 import logging
 import logging.config
+import time
+import re # regex
 from PyQt6.QtWidgets import QApplication
 from PyQt6 import uic # .ui files and their content
 from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
@@ -19,10 +21,9 @@ from PyQt6.QtWidgets import *
 from userstub import *
 from settingsstub import *
 
-import time
-import re # regex
-
-
+sys.path.append('../client')
+import chat_client 
+import client_functions 
 
 @Slot()
 def connect_server():
@@ -39,24 +40,25 @@ def connect_server():
     # checks for dotted-decimal : port (optional) compliance -> (Syntax)
     # no range (0-255) checking -> (Semantics)
 
-    # should we include checks for semantics in this stage
-    #  or postpone it to the backend and forward the error it will cause ?
+    # should we include checks for semantics in this stage or postpone it to the backend and forward the error it will cause ?
     logging.error("ip adress Syntax is incorrect !")
   else :
     logging.info(f"stub connecting to server '{ip}'")
     settings.InputServerAddress.setReadOnly(True)
     # setting cursor does not take effect immediately but on function exit ?!
     # unusable in current form as cursor starts showing when connection is finished
-    settings.setCursor(QtGui.QCursor(Qt.CursorShape.BusyCursor))
+    #settings.setCursor(QtGui.QCursor(Qt.CursorShape.BusyCursor))
     time.sleep(0.5)
     settings.ConnectionProgressBar.setValue(50)
+    client_functions.authenticate(chat_client.my_client.sock, chat_client.user)
+    chat_client.backend_start()
     time.sleep(0.5)
     settings.ConnectionProgressBar.setValue(100)
     #settings.setCursor(QtGui.QCursor(Qt.CursorShape.ArrowCursor))
 
 
 @Slot()
-def disconnect_server():
+def disconnect_server(socket):
   """Disconnect to a chat server
 
   Disconnect from a chat server via the settings window.
@@ -65,9 +67,11 @@ def disconnect_server():
   The function is a stub.
   """
   ip = settings.InputServerAddress.text()
-  logging.info(f"stub disconnecting from server '{ip}'")
+  logging.info(f"frontend disconnecting from server '{ip}'")
   settings.ConnectionProgressBar.setValue(0)
   settings.InputServerAddress.setReadOnly(False)
+  client_functions.close_connection(chat_client.my_client.sock)
+
 
 
 @Slot()
@@ -75,17 +79,22 @@ def send_msg():
   """Send message function
 
   This function is called when the user presses Enter,
-  to send the message. The function isn't fully implemented
-  at the moment.
-  """
+  to send the message."""
   r = window.userSelect.currentText()
   t = window.InputBar.text()
   if r == "All":
-    logging.info(f"stub broadcasting message '{t}'")
+    logging.info(f"frontend broadcasting message '{t}'")
   else:
-    logging.info(f"stub sending message '{t}' to '{r}'")
-  window.msgList.addItem(f"<you> -> {r}: "+t)
+    logging.info(f"frontend sending message '{t}' to '{r}'")
+  display_message(chat_client.user,r,t)
+  #chat_client.main_write_loop(chat_client.my_client.sock, r, f"!msg {r} "+t)
+  client_functions.text_message(chat_client.my_client.sock, t, chat_client.user, r)
   window.InputBar.clear()
+
+
+def display_message(sender : str, recipient : str, message : str):
+  """Displays a message on the msgList :: QListWidget """
+  window.msgList.addItem(f"{sender} -> {recipient}: '{message}'")
 
 
 def load_ui_file(filename):
@@ -123,4 +132,6 @@ if __name__ == "__main__":
   window.actionServer.triggered.connect(settings.show)
   init_settings_window(settings)
 
+
   sys.exit(app.exec())
+
