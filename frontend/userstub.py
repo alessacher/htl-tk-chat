@@ -7,7 +7,7 @@ import logging.config
 from PyQt6.QtWidgets import QTableWidgetItem
 from PyQt6.QtGui import QColor
 
-test_users = [ ("All","0.0.0.0")
+test_users = [ ("all","0.0.0.0")
              , ("test","10.0.0.1")
              , ("Klaus","10.0.0.2")
              , ("Peter","192.168.1.3")

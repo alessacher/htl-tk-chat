@@ -45,8 +45,13 @@ def main_read_loop(sock):
     global shutdown
     while not shutdown:
         message = client_functions.get_message(sock)
+        print(f"message={message}")
         if message == None:
             shutdown = True
+            return
+        if( type(message) == int):
+            print("got a hinig message from socket:")
+            print(message)
         elif message["type"] == "text":
             if message["author"] != user:
                 if message["recipient"] == "all":
@@ -73,7 +78,6 @@ def main_write_loop(sock, user):
                 buffer.split(" ")[1])
         else:
             client_functions.text_message(sock, buffer, user)
-            
     return
 
 
@@ -81,44 +85,45 @@ shutdown = False
 
 dir = os.path.dirname(__file__)
 config_file = os.path.join(dir, "client.conf")
-config = configparser.ConfigParser()
+cconfig = configparser.ConfigParser()
 
 if os.path.exists(config_file):
-    config.read(config_file)
+    cconfig.read(config_file)
 
 else:
-    config["SSL"] = {
+    cconfig["SSL"] = {
         "enable_ssl" : False
     }
 
-if len(sys.argv) == 1 and config.has_section("frontend"):
-    host = config.get("frontend","host")
-    port = int(config.get("frontend","port"))
-    user = config.get("frontend","user")
-elif len(sys.argv) == 4 : 
+if len(sys.argv) == 4 :
     host = sys.argv[1]
     port = int(sys.argv[2])
     user = sys.argv[3]
-else: # standalone, cli client
+else:
+  try:
+      host = cconfig.get("frontend","host")
+      port = int(cconfig.get("frontend","port"))
+      user = cconfig.get("frontend","user")
+  except:
     host = input("Server address: ")
     port = int(input("Server port: "))
     user = input("username: ")
     
-print(f"got {user}@{host}:{port}")
+print(f"backend got {user}@{host}:{port}")
 
-if config["SSL"].getboolean("enable_ssl"):
+if cconfig["SSL"].getboolean("enable_ssl"):
     my_client = SSL_Client(
         host,
         port,
-        config["SSL"]["certfile"],
-        eval("".join(("ssl.PROTOCOL_",config["SSL"]["ssl_version"])))
+        cconfig["SSL"]["certfile"],
+        eval("".join(("ssl.PROTOCOL_",cconfig["SSL"]["ssl_version"])))
         )
 else:
     my_client = Client(host, port)
 
 def init_backend():
         try:
-
+            print(f"authenticating on {my_client.sock} as {user}")
             client_functions.authenticate(my_client.sock, user)
 
             read_thread = threading.Thread(
@@ -131,8 +136,8 @@ def init_backend():
             read_thread.start()
             write_thread.start()
 
-            read_thread.join()
-            write_thread.join()
+            #read_thread.join()
+            #write_thread.join()
 
         except KeyboardInterrupt:
             shutdown = True
@@ -140,4 +145,5 @@ def init_backend():
             exit()
 
 if __name__ == '__main__':
+    print("client starting standalone")
     init_backend()

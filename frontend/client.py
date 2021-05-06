@@ -22,57 +22,8 @@ from userstub import *
 from settingsstub import *
 
 sys.path.append('../client')
-import chat_client 
-import client_functions 
-
-@Slot()
-def connect_server():
-  """Connect to a chat server
-
-  Connect to a chat server via the settings window and the
-  information provided through the same window.
-  This function is called when the user presses the 'Connect'
-  button in the settings window.
-  The function is a stub.
-  """
-  ip = settings.InputServerAddress.text()
-  if not re.match('((?:\d{1,3}\.){3}\d{1,3})((?:\:\d{1,5})|())',ip):
-    # checks for dotted-decimal : port (optional) compliance -> (Syntax)
-    # no range (0-255) checking -> (Semantics)
-
-    # should we include checks for semantics in this stage or postpone it to the backend and forward the error it will cause ?
-    logging.error("ip adress Syntax is incorrect !")
-  else :
-    logging.info(f"stub connecting to server '{ip}'")
-    settings.InputServerAddress.setReadOnly(True)
-    # setting cursor does not take effect immediately but on function exit ?!
-    # unusable in current form as cursor starts showing when connection is finished
-    #settings.setCursor(QtGui.QCursor(Qt.CursorShape.BusyCursor))
-    time.sleep(0.5)
-    settings.ConnectionProgressBar.setValue(50)
-    client_functions.authenticate(chat_client.my_client.sock, chat_client.user)
-    chat_client.backend_start()
-    time.sleep(0.5)
-    settings.ConnectionProgressBar.setValue(100)
-    #settings.setCursor(QtGui.QCursor(Qt.CursorShape.ArrowCursor))
-
-
-@Slot()
-def disconnect_server(socket):
-  """Disconnect to a chat server
-
-  Disconnect from a chat server via the settings window.
-  This function is called when the user presses the 'Cancel'
-  button for server connection in the settings window.
-  The function is a stub.
-  """
-  ip = settings.InputServerAddress.text()
-  logging.info(f"frontend disconnecting from server '{ip}'")
-  settings.ConnectionProgressBar.setValue(0)
-  settings.InputServerAddress.setReadOnly(False)
-  client_functions.close_connection(chat_client.my_client.sock)
-
-
+import chat_client
+import client_functions
 
 @Slot()
 def send_msg():
@@ -82,13 +33,13 @@ def send_msg():
   to send the message."""
   r = window.userSelect.currentText()
   t = window.InputBar.text()
-  if r == "All":
+  if r == "all":
     logging.info(f"frontend broadcasting message '{t}'")
   else:
     logging.info(f"frontend sending message '{t}' to '{r}'")
   display_message(chat_client.user,r,t)
-  #chat_client.main_write_loop(chat_client.my_client.sock, r, f"!msg {r} "+t)
   client_functions.text_message(chat_client.my_client.sock, t, chat_client.user, r)
+  logging.info(f"frontend calling textmessage with {chat_client.my_client.sock},{t},{chat_client.user}->{r}")
   window.InputBar.clear()
 
 
@@ -131,7 +82,6 @@ if __name__ == "__main__":
   settings = load_ui_file("settingswindow.ui")
   window.actionServer.triggered.connect(settings.show)
   init_settings_window(settings)
-
 
   sys.exit(app.exec())
 

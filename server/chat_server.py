@@ -63,6 +63,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     }
                     )
                 self.user = message["user"]
+                logging.info(f"created new user {self.user} on socket {self.request}")
                 for client in self.server.connected_clients:
                     text_message(
                         client["socket"],

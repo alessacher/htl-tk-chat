@@ -12,7 +12,11 @@ from PyQt6 import QtGui # cursor shapes
 import time
 import hashlib
 import configparser
+import sys
 
+sys.path.append('../client')
+import chat_client 
+import client_functions 
 
 dir = os.path.dirname(__file__)
 config_file = os.path.join(dir, "../client/client.conf")
@@ -47,44 +51,47 @@ def delete_frontend_config(settings):
 def load_frontend_config(settings):
   """Load the values stored in the .config file for frontend settings"""
   logging.info(f"Loading .config Profile")
-  if(config.has_section("frontend") ):
+  try:
     host = config.get("frontend", "host") + ':' + config.get("frontend", "port")
     user = config.get("frontend", "user")
-    settings.InputServerAddress.setText(host)
-    settings.InputUsername.setText(user)
-  else: 
-    logging.error("No frontend section found !")
+  except: 
+    logging.error("No or empty frontend section found !")
+    return
+  settings.InputServerAddress.setText(host)
+  settings.InputUsername.setText(user)
+  logging.info(f"frontend loaded user {user}, host {host}")
+
 
 
 @Slot()
 def connect_server(settings):
   """Connect to a chat server
 
-  Connect to a chat server via the settings window.
+  Connect to a chat server via the settings window and the
+  information provided through the same window.
   This function is called when the user presses the 'Connect'
   button in the settings window.
   The function is a stub.
   """
   ip = settings.InputServerAddress.text()
-  u = settings.InputUsername.text()
-  if not re.match("(?:[0-9]{1,3}\.){3}[0-9]{1,3}",ip):
-    # checks for dotted-decimal compliance (Syntax)
-    # no range (0-255) checking (Semantics)
-
+  if (not re.match('((?:\d{1,3}\.){3}\d{1,3})((?:\:\d{1,5})|())',ip)):
+    # checks for dotted-decimal : port (optional) compliance -> (Syntax)
+    # no range (0-255) checking -> (Semantics)
     # should we include checks for semantics in this stage or postpone it to the backend and forward the error it will cause ?
-    print("ip adress Syntax is incorrect !")
-  else :
-    print(f"stub connecting to server '{u}@{ip}'")
+    logging.error("ip adress Syntax is incorrect !")
+  else:
+    logging.info(f"stub connecting to server '{ip}'")
     settings.InputServerAddress.setReadOnly(True)
-    settings.InputUsername.setReadOnly(True)
-    settings.InputPassword.setReadOnly(True)
+    # setting cursor does not take effect immediately but on function exit ?!
+    # unusable in current form as cursor starts showing when connection is finished
     #settings.setCursor(QtGui.QCursor(Qt.CursorShape.BusyCursor))
     time.sleep(0.5)
     settings.ConnectionProgressBar.setValue(50)
+    #client_functions.authenticate(chat_client.my_client.sock, chat_client.user)
+    chat_client.init_backend()
     time.sleep(0.5)
     settings.ConnectionProgressBar.setValue(100)
     #settings.setCursor(QtGui.QCursor(Qt.CursorShape.ArrowCursor))
-
 
 @Slot()
 def disconnect_server(settings):
@@ -101,6 +108,8 @@ def disconnect_server(settings):
   settings.InputServerAddress.setReadOnly(False)
   settings.InputUsername.setReadOnly(False)
   settings.InputPassword.setReadOnly(False)
+  logging.info(f"frontend disconnecting from server '{ip}'")
+  client_functions.close_connection(chat_client.my_client.sock)
 
 
 def init_settings_window(settings):
