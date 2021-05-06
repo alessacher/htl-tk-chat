@@ -9,8 +9,7 @@ import sys
 import os.path
 import logging
 import logging.config
-import time
-import re # regex
+import threading
 from PyQt6.QtWidgets import QApplication
 from PyQt6 import uic # .ui files and their content
 from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
@@ -45,7 +44,7 @@ def send_msg():
 
 def display_message(sender : str, recipient : str, message : str):
   """Displays a message on the msgList :: QListWidget """
-  window.msgList.addItem(f"{sender} -> {recipient}: '{message}'")
+  window.msgList.addItem(f"{sender} -> {recipient}: {message}")
 
 
 def load_ui_file(filename):
@@ -63,6 +62,18 @@ def load_ui_file(filename):
     logging.error(f"Cannot open {ui_path} to load {filename}")
     sys.exit(1)
 
+def main_read_loop(sock):
+    """Reads the socket in a loop"""
+    while not chat_client.shutdown:
+        message = client_functions.get_message(sock)
+        print(f"message={message}")
+        if message == None:
+            chat_client.shutdown = True
+            return
+        elif message["type"] == "text":
+            if message["author"] != chat_client.user:
+              display_message(message['author'],message['recipient'],message['content'])
+    return
 
 if __name__ == "__main__":
   log_conf = os.path.join(dir, "logger.conf")
@@ -82,6 +93,9 @@ if __name__ == "__main__":
   settings = load_ui_file("settingswindow.ui")
   window.actionServer.triggered.connect(settings.show)
   init_settings_window(settings)
+
+  display_thread = threading.Thread(target=main_read_loop, args=(chat_client.my_client.sock,))
+  display_thread.start()
 
   sys.exit(app.exec())
 

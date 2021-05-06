@@ -133,7 +133,9 @@ def init_backend():
                 target=main_write_loop,
                 args=(my_client.sock, user,))
 
-            read_thread.start()
+            if __name__ == "__main__":
+                read_thread.start()
+
             write_thread.start()
 
             #read_thread.join()
