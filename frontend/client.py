@@ -70,6 +70,8 @@ def main_read_loop(sock):
         if message == None:
             chat_client.shutdown = True
             return
+        if( type(message) == int):
+          print("got a hinig message from socket:",message)
         elif message["type"] == "text":
             if message["author"] != chat_client.user:
               display_message(message['author'],message['recipient'],message['content'])

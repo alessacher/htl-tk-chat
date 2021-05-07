@@ -74,24 +74,16 @@ def connect_server(settings):
   The function is a stub.
   """
   ip = settings.InputServerAddress.text()
-  if (not re.match('((?:\d{1,3}\.){3}\d{1,3})((?:\:\d{1,5})|())',ip)):
-    # checks for dotted-decimal : port (optional) compliance -> (Syntax)
-    # no range (0-255) checking -> (Semantics)
-    # should we include checks for semantics in this stage or postpone it to the backend and forward the error it will cause ?
+  port = settings.InputPort.text()
+  if (not re.match('((?:\d{1,3}\.){3}\d{1,3})',ip)):
     logging.error("ip adress Syntax is incorrect !")
   else:
-    logging.info(f"stub connecting to server '{ip}'")
+    logging.info(f"stub connecting to server '{ip}:{port}'")
     settings.InputServerAddress.setReadOnly(True)
-    # setting cursor does not take effect immediately but on function exit ?!
-    # unusable in current form as cursor starts showing when connection is finished
-    #settings.setCursor(QtGui.QCursor(Qt.CursorShape.BusyCursor))
-    time.sleep(0.5)
-    settings.ConnectionProgressBar.setValue(50)
-    #client_functions.authenticate(chat_client.my_client.sock, chat_client.user)
+    settings.InputUsername.setReadOnly(True)
+    settings.InputPassword.setReadOnly(True)
     chat_client.init_backend()
-    time.sleep(0.5)
-    settings.ConnectionProgressBar.setValue(100)
-    #settings.setCursor(QtGui.QCursor(Qt.CursorShape.ArrowCursor))
+
 
 @Slot()
 def disconnect_server(settings):
@@ -117,7 +109,6 @@ def init_settings_window(settings):
   Initialize functionality of settings-window elements
   Mainly, actions and signals are being connected to their Slots
   """
-  settings.ConnectionProgressBar.setValue(0)
   settings.ButtonStartConnection.pressed.connect(lambda: connect_server(settings))
   settings.ButtonEndConnection.pressed.connect(lambda: disconnect_server(settings))
   settings.ButtonSaveProfile.pressed.connect(lambda: save_frontend_config(settings))

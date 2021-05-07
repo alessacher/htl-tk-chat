@@ -103,7 +103,7 @@
              <string/>
             </property>
             <property name="text">
-             <string>127.0.0.1:1234</string>
+             <string>127.0.0.1</string>
             </property>
             <property name="readOnly">
              <bool>false</bool>
@@ -114,9 +114,22 @@
            </widget>
           </item>
           <item>
+           <widget class="QLineEdit" name="InputPort">
+            <property name="text">
+             <string>9999</string>
+            </property>
+            <property name="placeholderText">
+             <string>Port</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QLineEdit" name="InputUsername">
             <property name="toolTip">
              <string>Your Username to connect to the chat-server</string>
+            </property>
+            <property name="text">
+             <string>test</string>
             </property>
             <property name="placeholderText">
              <string>Username</string>
@@ -133,13 +146,6 @@
             </property>
             <property name="placeholderText">
              <string>Password</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QProgressBar" name="ConnectionProgressBar">
-            <property name="value">
-             <number>24</number>
             </property>
            </widget>
           </item>
