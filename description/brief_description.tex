@@ -3,7 +3,6 @@
 \KOMAoptions{headings=standardclasses}
 \KOMAoptions{DIV=13}
 %\KOMAoption{captions}{centeredbeside}
-
 \usepackage{scrlayer-scrpage}
 \KOMAoptions{autooneside=false,automark}
 \pagestyle{scrheadings}
@@ -43,8 +42,8 @@
 \renewcommand{\thefootnote}{\roman{footnote}}
 \setkomafont{pageheadfoot}{\rmfamily}
 \clearpairofpagestyles
-\lohead{\leftmark}
-\rohead{Simon Graber, 4AHEL}
+\lohead{htl-tk-chat}
+\rohead{Alexander Lessacher, Laurenz Preindl, Simon Graber}
 \cohead{}
 \rofoot{Seite \thepage\ von \pageref{LastPage}}
 \cofoot{\raisebox{-2cm}{Vom \todaysname, dem \today}}
@@ -70,21 +69,31 @@
 
 \begin{document}
 
-\titlehead{HTL Anichstraße \hfill Wintersemester 2020\\
-Abteilung Elektronik \& techn. Informatik\hfill Sommersemester 2021}
 %\subject{}
-\title{Manual \texttt{htl-tk-chat}}
+\title{Kurzbeschreibung \texttt{htl-tk-chat}}
 \subtitle{Projekt: Fachspezifische Softwaretechnik}
 \author{Simon Graber \and Laurenz Preindl \and Alexander Lessacher}
 
 \maketitle
-%\tableofcontents\clearpage
+\section*{Projekt}
+Unser Projekt ist ein Chat Programm mit Client und Server. Beides in Python geschrieben und der Client mit Qt6 frontend.
 
+\section*{Kurzbeschreibung}
+Das Chat Programm soll es möglich machen Nachrichten, Dateien und Bilder zwischen den Clients auszutauschen. 
 
+\section*{Projekt Mitglieder}
+Die an dem Projekt beteiligten Mitglieder sind:
+\begin{itemize}
+ \item Alexander Lessacher
+ \item Laurenz Preindl
+ \item Simon Graber
+\end{itemize}
 
-
-
-
-
-
+\section*{Planung und Funktionalität}
+Die Verbindung zwischen dem Server und dem Client soll Verschlüsselt sein und auch die Nachrichten sollen verschlüsselt, serverseitig gespeichert werden. Es soll einzelnen Clients möglich sein private Nachrichten untereinander auszutauschen. Es soll möglich sein Benachrichtungs Alarme für Chats auszuwählen. Die Dokumentation des Codes erfolgt mittels doxygen und für die User wird es ein User Manual gegen.
+Das Projekt ist lizenziert unter der GNU General Public License Version 3.
+Die Planung erfolgt über Milestones und Issues am git repository.\\
+Das offizielle repository ist \url{https://gitea.escpe.net/cc69222/htl-tk-chat}\\
+Für mehr informationen schauen Sie auf das git repository.
 \end{document}
+% 

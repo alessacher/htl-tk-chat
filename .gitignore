@@ -286,3 +286,11 @@ TSWLatexianTemp*
 # Uncomment the next line to have this generated file ignored.
 #*Notes.bib
 
+# Qtcreator / Python
+*.user
+*.autosave
+*.pyc
+__pycache__
+
+# server log file
+chatserver.log

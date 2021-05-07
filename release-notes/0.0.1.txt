@@ -1,0 +1,18 @@
+Release Notes for 0.0.1
+
+This release contains the first version of the htl-tk-chat.
+
+Programs:
+
+A CLI based chat client to write simple messages to other users.
+A qt6 based GUI chat client for the same purpose. Some of the features
+in the GUI client are not yet fully functional.
+A chat server for the clients to connect to.
+
+Features:
+
+You can write Text messages.
+Authentication of users via username.
+You can encrypt the connection to the server via SSL.
+You can write private messages.
+The server logs its connections.
