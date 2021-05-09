@@ -16,12 +16,14 @@ import sys
 
 sys.path.append('../client')
 import chat_client 
-import client_functions 
+import client_functions
 
 dir = os.path.dirname(__file__)
 config_file = os.path.join(dir, "../client/client.conf")
 config = configparser.ConfigParser() # client config file
 config.read(config_file)
+
+connected = False
 
 @Slot()
 def save_frontend_config(settings):
@@ -52,7 +54,7 @@ def load_frontend_config(settings):
   """Load the values stored in the .config file for frontend settings"""
   logging.info(f"Loading .config Profile")
   try:
-    host = config.get("frontend", "host") + ':' + config.get("frontend", "port")
+    host = config.get("frontend", "host")
     user = config.get("frontend", "user")
   except: 
     logging.error("No or empty frontend section found !")
@@ -73,16 +75,19 @@ def connect_server(settings):
   button in the settings window.
   The function is a stub.
   """
-  ip = settings.InputServerAddress.text()
-  port = settings.InputPort.text()
-  if (not re.match('((?:\d{1,3}\.){3}\d{1,3})',ip)):
-    logging.error("ip adress Syntax is incorrect !")
-  else:
+
+  global connected
+
+  if connected == False:
+    ip = settings.InputServerAddress.text()
+    port = settings.InputPort.text()
+
     logging.info(f"stub connecting to server '{ip}:{port}'")
     settings.InputServerAddress.setReadOnly(True)
     settings.InputUsername.setReadOnly(True)
     settings.InputPassword.setReadOnly(True)
     chat_client.init_backend()
+    connected = True
 
 
 @Slot()
@@ -94,14 +99,18 @@ def disconnect_server(settings):
   button for server connection in the settings window.
   The function is a stub.
   """
-  ip = settings.InputServerAddress.text()
-  print(f"stub disconnecting from server '{ip}'")
-  settings.ConnectionProgressBar.setValue(0)
-  settings.InputServerAddress.setReadOnly(False)
-  settings.InputUsername.setReadOnly(False)
-  settings.InputPassword.setReadOnly(False)
-  logging.info(f"frontend disconnecting from server '{ip}'")
-  client_functions.close_connection(chat_client.my_client.sock)
+
+  global connected
+
+  if connected == True:
+    connected = False
+    ip = settings.InputServerAddress.text()
+    print(f"stub disconnecting from server '{ip}'")
+    settings.InputServerAddress.setReadOnly(False)
+    settings.InputUsername.setReadOnly(False)
+    settings.InputPassword.setReadOnly(False)
+    logging.info(f"frontend disconnecting from server '{ip}'")
+    client_functions.close_connection(chat_client.my_client.sock)
 
 
 def init_settings_window(settings):

@@ -13,8 +13,12 @@ import sys
 class Client:
     """Intializes the Socket which is available as self.sock"""
     def __init__(self, ip : str, port : int):
+        self.__ip = ip
+        self.__port = port
+    
+    def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((ip,port))
+        self.sock.connect((self.__ip, self.__port))
         self.sock.setblocking(True)
 
 class SSL_Client:
@@ -123,6 +127,7 @@ else:
 
 def init_backend():
         try:
+            my_client.connect()
             print(f"authenticating on {my_client.sock} as {user}")
             client_functions.authenticate(my_client.sock, user)
 
