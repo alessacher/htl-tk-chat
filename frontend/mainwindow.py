@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'mainwindow.ui'
+# Form implementation generated from reading ui file 'ui_files/mainwindow.ui'
 #
 # Created by: PyQt6 UI code generator 6.0.3
 #
@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowModality(QtCore.Qt.WindowModality.NonModal)
         MainWindow.resize(707, 606)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icon.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon.addPixmap(QtGui.QPixmap("ui_files/icon.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setTabShape(QtWidgets.QTabWidget.TabShape.Triangular)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -54,7 +54,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.chatList, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 707, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 707, 30))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -68,7 +68,6 @@ class Ui_MainWindow(object):
         self.actionServer = QtGui.QAction(MainWindow)
         self.actionServer.setObjectName("actionServer")
         self.menuFile.addAction(self.actionExport)
-        self.menuFile.addAction(self.actionExit)
         self.menuSettings.addAction(self.actionServer)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())

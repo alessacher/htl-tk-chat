@@ -26,6 +26,15 @@ sys.path.append('../client')
 import chat_client
 import client_functions
 
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+    def closeEvent(self, event):
+        logging.info("Application closing")
+        client_functions.close_connection(chat_client.my_client.sock)
+        event.accept()
+
 @Slot()
 def send_msg():
     """Send message function
@@ -71,13 +80,12 @@ if __name__ == "__main__":
   app = QApplication(sys.argv)
   #app.setStyle('Fusion') # only Windows or Fusion
 
-  mainwindow = QMainWindow()
+  mainwindow = MainWindow()
   mainwindowui = Ui_MainWindow()
   mainwindowui.setupUi(mainwindow)
   mainwindowui.InputBar.returnPressed.connect(send_msg)
   test_user_table(mainwindowui)
   test_combo_box(mainwindowui)
-  mainwindowui.actionExit.triggered.connect(app.quit)
   mainwindow.show()
 
   settingswindow = QMainWindow()
