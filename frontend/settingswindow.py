@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'settingswindow.ui'
+# Form implementation generated from reading ui file 'ui_files/settingswindow.ui'
 #
 # Created by: PyQt6 UI code generator 6.0.3
 #
@@ -58,13 +58,16 @@ class Ui_SettingsWindow(object):
         self.InputServerAddress.setStatusTip("")
         self.InputServerAddress.setWhatsThis("")
         self.InputServerAddress.setInputMask("")
+        self.InputServerAddress.setText("")
         self.InputServerAddress.setReadOnly(False)
         self.InputServerAddress.setObjectName("InputServerAddress")
         self.AuthLayout.addWidget(self.InputServerAddress)
         self.InputPort = QtWidgets.QLineEdit(self.TabInformation)
+        self.InputPort.setText("")
         self.InputPort.setObjectName("InputPort")
         self.AuthLayout.addWidget(self.InputPort)
         self.InputUsername = QtWidgets.QLineEdit(self.TabInformation)
+        self.InputUsername.setText("")
         self.InputUsername.setObjectName("InputUsername")
         self.AuthLayout.addWidget(self.InputUsername)
         self.InputPassword = QtWidgets.QLineEdit(self.TabInformation)
@@ -110,12 +113,9 @@ class Ui_SettingsWindow(object):
         self.checkBox_2.setText(_translate("SettingsWindow", "CheckBox"))
         self.ConncetionLabel.setText(_translate("SettingsWindow", "Connect to server"))
         self.InputServerAddress.setToolTip(_translate("SettingsWindow", "IP-Address of the server in dotted decimal, Port is optional"))
-        self.InputServerAddress.setText(_translate("SettingsWindow", "127.0.0.1"))
         self.InputServerAddress.setPlaceholderText(_translate("SettingsWindow", "ip:port"))
-        self.InputPort.setText(_translate("SettingsWindow", "9999"))
         self.InputPort.setPlaceholderText(_translate("SettingsWindow", "Port"))
         self.InputUsername.setToolTip(_translate("SettingsWindow", "Your Username to connect to the chat-server"))
-        self.InputUsername.setText(_translate("SettingsWindow", "test"))
         self.InputUsername.setPlaceholderText(_translate("SettingsWindow", "Username"))
         self.InputPassword.setToolTip(_translate("SettingsWindow", "Your Password for your User"))
         self.InputPassword.setPlaceholderText(_translate("SettingsWindow", "Password"))
@@ -129,13 +129,3 @@ class Ui_SettingsWindow(object):
         self.ActionSaveProfile.setToolTip(_translate("SettingsWindow", "Save Profile"))
         self.ActionSaveProfileAs.setText(_translate("SettingsWindow", "Save Profile As..."))
         self.ActionSaveProfileAs.setToolTip(_translate("SettingsWindow", "Save Profile with custom name"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    SettingsWindow = QtWidgets.QMainWindow()
-    ui = Ui_SettingsWindow()
-    ui.setupUi(SettingsWindow)
-    SettingsWindow.show()
-    sys.exit(app.exec())

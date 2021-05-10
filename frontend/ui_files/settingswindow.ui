@@ -103,7 +103,7 @@
              <string/>
             </property>
             <property name="text">
-             <string>127.0.0.1</string>
+             <string/>
             </property>
             <property name="readOnly">
              <bool>false</bool>
@@ -116,7 +116,7 @@
           <item>
            <widget class="QLineEdit" name="InputPort">
             <property name="text">
-             <string>9999</string>
+             <string/>
             </property>
             <property name="placeholderText">
              <string>Port</string>
@@ -129,7 +129,7 @@
              <string>Your Username to connect to the chat-server</string>
             </property>
             <property name="text">
-             <string>test</string>
+             <string/>
             </property>
             <property name="placeholderText">
              <string>Username</string>

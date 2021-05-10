@@ -114,7 +114,7 @@ if __name__ == "__main__":
     logging.info("Client Logging ready")
 
     app = QApplication(sys.argv)
-    #app.setStyle('Fusion') # only Windows or Fusion
+    app.setStyle('Breeze') # only Windows or Fusion
 
     mainwindow = MainWindow()
     mainwindowui = Ui_MainWindow()

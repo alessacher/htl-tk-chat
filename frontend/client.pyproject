@@ -1,3 +1,3 @@
 {
-    "files": ["main.py","client.py","bare.py","settingswindow.ui","userstub.py","test.qml","sqlDialog.py","sql_dlg.py","mainwindow.ui","settingsstub.py"]
+    "files": ["sql_dlg.py","client.py","sqlDialog.py","userstub.py","settingswindow.ui","test.qml","bare.py","ui_files/settingswindow.ui","main.py","mainwindow.ui","settingsstub.py","ui_files/mainwindow.ui"]
 }

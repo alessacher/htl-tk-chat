@@ -15,7 +15,7 @@ class Client:
     def __init__(self, ip : str, port : int):
         self.__ip = ip
         self.__port = port
-    
+
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((self.__ip, self.__port))
@@ -54,8 +54,7 @@ def main_read_loop(sock):
             shutdown = True
             return
         if( type(message) == int):
-            print("got a hinig message from socket:")
-            print(message)
+            print("got a hinig message from socket:",message)
         elif message["type"] == "text":
             if message["author"] != user:
                 if message["recipient"] == "all":
@@ -105,23 +104,24 @@ if len(sys.argv) == 4 :
     user = sys.argv[3]
 else:
   try:
-      host = cconfig.get("frontend","host")
-      port = int(cconfig.get("frontend","port"))
-      user = cconfig.get("frontend","user")
+    host = cconfig.get("frontend","host")
+    port = int(cconfig.get("frontend","port"))
+    user = cconfig.get("frontend","user")
   except:
     host = input("Server address: ")
     port = int(input("Server port: "))
-    user = input("username: ")
-    
+    user = input("Username: ")
+
 print(f"backend got {user}@{host}:{port}")
 
-if cconfig["SSL"].getboolean("enable_ssl"):
-    my_client = SSL_Client(
-        host,
-        port,
-        cconfig["SSL"]["certfile"],
-        eval("".join(("ssl.PROTOCOL_",cconfig["SSL"]["ssl_version"])))
-        )
+if cconfig.has_section("SSL"):
+    if cconfig["SSL"].getboolean("enable_ssl"):
+        my_client = SSL_Client(
+            host,
+            port,
+            cconfig["SSL"]["certfile"],
+            eval("".join(("ssl.PROTOCOL_",cconfig["SSL"]["ssl_version"])))
+            )
 else:
     my_client = Client(host, port)
 

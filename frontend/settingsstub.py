@@ -30,12 +30,17 @@ def save_frontend_config(settings):
   """Save the settings values to a .config file"""
   logging.info(f"Saving current settings to {config_file}...")
   user = settings.InputUsername.text()
-  (ip,port) = re.split("\:",settings.InputServerAddress.text(),1)
+  addr = settings.InputServerAddress.text()
+  port = settings.InputPort.text()
+  if re.match("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",addr):
+    logging.info(f"Got dotted decimal addr from settings-panel {addr}")
+  elif re.match("^\w*\.(\w*|\.)*$",addr):
+    logging.info(f"Got hostname from settings-panel: {addr}")
   config.read(config_file)
   if(not config.has_section("frontend")):
     logging.info("No Config section found, creating one")
     config.add_section("frontend")
-  config.set("frontend", "host", ip)
+  config.set("frontend", "host", addr)
   config.set("frontend", "port", port)
   config.set("frontend", "user", user)
   config.write(open(config_file,'w'))
@@ -115,13 +120,17 @@ def disconnect_server(settings):
 
 def init_settings_window(settings):
   """Initialize settings-window
-  Initialize functionality of settings-window elements
-  Mainly, actions and signals are being connected to their Slots
+  Actions and signals are being connected to their Slots
   """
   settings.ButtonStartConnection.pressed.connect(lambda: connect_server(settings))
   settings.ButtonEndConnection.pressed.connect(lambda: disconnect_server(settings))
   settings.ButtonSaveProfile.pressed.connect(lambda: save_frontend_config(settings))
   settings.ButtonDeleteProfile.pressed.connect(lambda: delete_frontend_config(settings))
   settings.ButtonLoadProfile.pressed.connect(lambda: load_frontend_config(settings))
+
+  settings.InputServerAddress.setText(chat_client.host)
+  settings.InputPort.setText(str(chat_client.port))
+  settings.InputUsername.setText(chat_client.user)
+
 
 
