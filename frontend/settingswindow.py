@@ -95,10 +95,6 @@ class Ui_SettingsWindow(object):
         self.MainTabBar.addTab(self.TabSettings, "")
         self.gridLayout.addWidget(self.MainTabBar, 2, 0, 1, 5)
         SettingsWindow.setCentralWidget(self.centralWidget)
-        self.ActionSaveProfile = QtGui.QAction(SettingsWindow)
-        self.ActionSaveProfile.setObjectName("ActionSaveProfile")
-        self.ActionSaveProfileAs = QtGui.QAction(SettingsWindow)
-        self.ActionSaveProfileAs.setObjectName("ActionSaveProfileAs")
 
         self.retranslateUi(SettingsWindow)
         self.MainTabBar.setCurrentIndex(0)
@@ -125,7 +121,3 @@ class Ui_SettingsWindow(object):
         self.ButtonEndConnection.setText(_translate("SettingsWindow", "Disconnect"))
         self.MainTabBar.setTabText(self.MainTabBar.indexOf(self.TabInformation), _translate("SettingsWindow", "Information"))
         self.MainTabBar.setTabText(self.MainTabBar.indexOf(self.TabSettings), _translate("SettingsWindow", "Settings"))
-        self.ActionSaveProfile.setText(_translate("SettingsWindow", "Save Profile"))
-        self.ActionSaveProfile.setToolTip(_translate("SettingsWindow", "Save Profile"))
-        self.ActionSaveProfileAs.setText(_translate("SettingsWindow", "Save Profile As..."))
-        self.ActionSaveProfileAs.setToolTip(_translate("SettingsWindow", "Save Profile with custom name"))

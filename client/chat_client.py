@@ -122,8 +122,8 @@ if cconfig.has_section("SSL"):
             cconfig["SSL"]["certfile"],
             eval("".join(("ssl.PROTOCOL_",cconfig["SSL"]["ssl_version"])))
             )
-else:
-    my_client = Client(host, port)
+    else:
+        my_client = Client(host, port)
 
 def init_backend():
         try:
