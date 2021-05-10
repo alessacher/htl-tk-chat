@@ -85,13 +85,13 @@ def connect_server(settings):
 
   if connected == False:
     ip = settings.InputServerAddress.text()
-    port = settings.InputPort.text()
+    port = int(settings.InputPort.text())
 
     logging.info(f"stub connecting to server '{ip}:{port}'")
     settings.InputServerAddress.setReadOnly(True)
     settings.InputUsername.setReadOnly(True)
     settings.InputPassword.setReadOnly(True)
-    chat_client.init_backend()
+    chat_client.init_backend(ip, port)
     connected = True
 
 

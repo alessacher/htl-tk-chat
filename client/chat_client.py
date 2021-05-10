@@ -16,10 +16,12 @@ class Client:
         self.__ip = ip
         self.__port = port
 
-    def connect(self):
+    def connect(self, ip = None, port = None):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((self.__ip, self.__port))
-        self.sock.setblocking(True)
+        if ip == None and port == None:
+            self.sock.connect((self.__ip, self.__port))
+        else:
+            self.sock.connect((ip, port))
 
 class SSL_Client:
     """The same Client but with SSL support"""
@@ -125,31 +127,28 @@ if cconfig.has_section("SSL"):
     else:
         my_client = Client(host, port)
 
-def init_backend():
-        try:
-            my_client.connect()
-            print(f"authenticating on {my_client.sock} as {user}")
-            client_functions.authenticate(my_client.sock, user)
+def init_backend(ip = None, port = None):
+    global shutdown
+    try:
+        my_client.connect(ip, port)
+        print(f"authenticating on {my_client.sock} as {user}")
+        client_functions.authenticate(my_client.sock, user)
 
-            read_thread = threading.Thread(
-                target=main_read_loop,
-                args=(my_client.sock,))
-            write_thread = threading.Thread(
-                target=main_write_loop,
-                args=(my_client.sock, user,))
+        read_thread = threading.Thread(
+            target=main_read_loop,
+            args=(my_client.sock,))
+        write_thread = threading.Thread(
+            target=main_write_loop,
+            args=(my_client.sock, user,))
 
-            if __name__ == "__main__":
-                read_thread.start()
-
+        if __name__ == "__main__":
+            read_thread.start()
             write_thread.start()
 
-            #read_thread.join()
-            #write_thread.join()
-
-        except KeyboardInterrupt:
-            shutdown = True
-            client_functions.close_connection(my_client.sock)
-            exit()
+    except KeyboardInterrupt:
+        shutdown = True
+        client_functions.close_connection(my_client.sock)
+        exit()
 
 if __name__ == '__main__':
     print("client starting standalone")
