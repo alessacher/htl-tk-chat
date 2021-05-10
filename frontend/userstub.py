@@ -55,3 +55,22 @@ def test_combo_box(window):
   """
   users = [x[0] for x in test_users]
   window.userSelect.addItems(users)
+
+def set_user_table(window, users):
+  table = window.chatList
+  table.clear()
+  table.setRowCount(len(users))
+  table.setColumnCount(1)
+  table.setHorizontalHeaderLabels(["Users"])
+
+  logging.debug(f"Users: {users}")
+
+  for index, user in enumerate(users):
+    userwidget = QTableWidgetItem(str(user))
+    logging.debug(f"Made user widget from user {user}")
+    table.setItem(index, 0, userwidget)
+
+def set_combo_box(window, users):
+  window.userSelect.clear()
+  users.insert(0, "all")
+  window.userSelect.addItems(users)

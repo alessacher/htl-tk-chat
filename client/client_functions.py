@@ -8,6 +8,8 @@ this api. This makes it easier to programm the GUI later.
 
 import msgpack
 import time
+import uuid
+import socket
 
 def authenticate(sock, username : str):
     """Authentication function
@@ -21,6 +23,7 @@ def authenticate(sock, username : str):
     message = {
         "type" : "auth",
         "user" : username,
+        "uuid" : str(uuid.uuid3(uuid.NAMESPACE_DNS, socket.gethostname())),
         "time" : time.time()
     }
     packer = msgpack.Packer()

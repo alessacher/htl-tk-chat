@@ -13,6 +13,11 @@
     <height>606</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>12</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -73,25 +78,29 @@
      </layout>
     </item>
     <item row="0" column="1">
-     <widget class="QListWidget" name="msgList"/>
+     <widget class="QListWidget" name="msgList">
+      <property name="isWrapping" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
     <item row="0" column="0">
      <widget class="QTableWidget" name="chatList">
-      <property name="minimumSize">
-       <size>
-        <width>301</width>
-        <height>521</height>
-       </size>
+      <property name="sizeAdjustPolicy">
+       <enum>QAbstractScrollArea::AdjustToContents</enum>
       </property>
-      <property name="defaultDropAction">
-       <enum>Qt::LinkAction</enum>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
       </property>
-      <property name="alternatingRowColors">
-       <bool>false</bool>
+      <property name="textElideMode">
+       <enum>Qt::ElideNone</enum>
       </property>
-      <property name="sortingEnabled">
+      <attribute name="horizontalHeaderCascadingSectionResizes">
        <bool>true</bool>
-      </property>
+      </attribute>
      </widget>
     </item>
    </layout>
@@ -102,7 +111,7 @@
      <x>0</x>
      <y>0</y>
      <width>707</width>
-     <height>30</height>
+     <height>35</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

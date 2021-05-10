@@ -99,6 +99,11 @@ else:
     cconfig["SSL"] = {
         "enable_ssl" : False
     }
+    cconfig["frontend"] = {
+        "host" : "ehw12.ddns.net",
+        "port" : 9999,
+        "user" : "guest"
+    }
 
 if len(sys.argv) == 4 :
     host = sys.argv[1]
@@ -106,13 +111,14 @@ if len(sys.argv) == 4 :
     user = sys.argv[3]
 else:
   try:
-    host = cconfig.get("frontend","host")
-    port = int(cconfig.get("frontend","port"))
-    user = cconfig.get("frontend","user")
-  except:
-    host = input("Server address: ")
-    port = int(input("Server port: "))
-    user = input("Username: ")
+        host = cconfig.get("frontend","host")
+        port = int(cconfig.get("frontend","port"))
+        user = cconfig.get("frontend","user")
+  except Exception:
+        host = input("Server address: ")
+        port = int(input("Server port: "))
+        user = input("Username: ")
+
 
 print(f"backend got {user}@{host}:{port}")
 
@@ -127,12 +133,13 @@ if cconfig.has_section("SSL"):
     else:
         my_client = Client(host, port)
 
-def init_backend(ip = None, port = None):
-    global shutdown
+def init_backend(ip = None, port = None, username = user):
+    global shutdown, user
     try:
         my_client.connect(ip, port)
+        user = username
         print(f"authenticating on {my_client.sock} as {user}")
-        client_functions.authenticate(my_client.sock, user)
+        client_functions.authenticate(my_client.sock, username)
 
         read_thread = threading.Thread(
             target=main_read_loop,

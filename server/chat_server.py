@@ -35,11 +35,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
             if message == None:
                 logging.error("Client disconnected forcefully")
-                self.server.connected_clients.remove(
-                    {
-                    "socket" : self.request,
-                    "user"   : self.user
-                    }
+                self.remove_user()
+                for client in self.server.connected_clients:
+                    send_connected_users(
+                        client["socket"],
+                        connected_users
                     )
                 return
 
@@ -48,21 +48,32 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 logging.info(f"New client with username: {message['user']}")
                 for client in self.server.connected_clients:
                     if client["user"] == message["user"]:
-                        text_message(
-                            self.request,
-                            f"Username : {message['user']} already taken",
-                            "SERVER"
-                            )
-                        self.request.close()
-                        return
+                        if client["uuid"] != message["uuid"]:
+                            text_message(
+                                self.request,
+                                f"Username : {message['user']} already taken",
+                                "SERVER"
+                                )
+                            self.request.close()
+                            return
+                        else:
+                            text_message(
+                                self.request,
+                                f"{message['user']} reconnected",
+                                "SERVER"
+                                )
+                            client["socket"] = self.request
+                            return
 
                 self.server.connected_clients.append(
                     {
                     "socket" : self.request,
-                    "user"   : message["user"]
+                    "user"   : message["user"],
+                    "uuid"   : message["uuid"]
                     }
                     )
                 self.user = message["user"]
+                connected_users = [x["user"] for x in self.server.connected_clients]
                 logging.info(f"created new user {self.user} on socket {self.request}")
                 for client in self.server.connected_clients:
                     text_message(
@@ -70,6 +81,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         f"{message['user']} logged in",
                         "SERVER"
                         )
+                    send_connected_users(
+                        client["socket"],
+                        connected_users
+                    )
+            
 
             elif message["type"] == "text":
                 logging.debug(f"Got text message request from {self.client_address}")
@@ -102,14 +118,20 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                             )
 
             elif message["type"] == "close":
-                self.server.connected_clients.remove(
-                    {
-                    "socket" : self.request,
-                    "user"   : self.user
-                    })
+                self.remove_user()
                 logging.info(f"Closing connection from {self.client_address}")
+                for client in self.server.connected_clients:
+                    send_connected_users(
+                        client["socket"],
+                        connected_users
+                    )
                 return
 
+
+    def remove_user(self):
+        for client in self.server.connected_clients:
+            if client["user"] == self.user:
+                self.server.connected_clients.remove(client)
 class SSL_TCPServer(socketserver.TCPServer):
     """A TCP Server with SSL support"""
     def __init__(
@@ -168,7 +190,7 @@ def text_message(sock, text : str, author : str, recipient : str = "all"):
     """Text Message function
 
     Takes a socket, text, author and recipient as arguments and
-    sends it to the server.
+    sends it to the client.
     """
     message = {
         "type" : "text",
@@ -180,6 +202,21 @@ def text_message(sock, text : str, author : str, recipient : str = "all"):
     packer = msgpack.Packer()
     sock.sendall(packer.pack(message))
     logging.debug(f"Send message '{text}' to client : {sock.getpeername()}")
+
+def send_connected_users(sock, usernames):
+    """Text Message function
+
+    Takes a socket and a iterable usernames as arguments and
+    sends it to the client.
+    """
+    message = {
+        "type" : "users",
+        "users" : usernames,
+        "time" : time.time()
+    }
+    packer = msgpack.Packer()
+    sock.sendall(packer.pack(message))
+    logging.debug(f"Send connected users to client")
 
 if __name__ == "__main__":
     dir = os.path.dirname(__file__)

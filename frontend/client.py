@@ -11,14 +11,14 @@ import logging
 import logging.config
 import threading
 import time
-from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt6 import uic # .ui files and their content
 from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import * # cursor shapes
 from PyQt6.QtWidgets import *
 
-from userstub import *
+import userstub
 import settingsstub
 from mainwindow import Ui_MainWindow
 from settingswindow import Ui_SettingsWindow
@@ -103,6 +103,9 @@ def main_read_loop(sock):
         elif message["type"] == "text":
             if message["author"] != chat_client.user:
               display_message(message['author'],message['recipient'],message['content'])
+        elif message["type"] == "users":
+            userstub.set_user_table(mainwindowui, message["users"])
+            userstub.set_combo_box(mainwindowui, message["users"])
 
     logging.debug("read loop stopped")
     return
@@ -120,8 +123,6 @@ if __name__ == "__main__":
     mainwindowui = Ui_MainWindow()
     mainwindowui.setupUi(mainwindow)
     mainwindowui.InputBar.returnPressed.connect(send_msg)
-    test_user_table(mainwindowui)
-    test_combo_box(mainwindowui)
     mainwindow.show()
 
     settingswindow = QMainWindow()
