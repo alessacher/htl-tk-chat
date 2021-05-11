@@ -30,8 +30,22 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         logging.info(f"Got new connection from {self.client_address}.")
 
         while True:
-            message = recvall(self.request)
+            try:
+                buffer = recvall(self.request)
+            except ConnectionResetError:
+                logging.error("Connection reset by peer, client disconnected")
+                self.remove_user()
+                for client in self.server.connected_clients:
+                    send_connected_users(
+                        client["socket"],
+                        connected_users
+                    )
+                return
+            message = unpack_message(buffer)
             logging.debug(f"Message: {message}")
+
+            if type(message) == int:
+                continue
 
             if message == None:
                 logging.error("Client disconnected forcefully")
@@ -273,7 +287,7 @@ def image_message(
 
 
 def recvall(sock):
-    buffersize = 8192
+    buffersize = 1024
     data = bytearray()
     while True:
         buffer = sock.recv(buffersize)
@@ -283,7 +297,7 @@ def recvall(sock):
         if len(buffer) < buffersize:
             break
         logging.debug(f"receiving something larger than {buffersize}")
-    return unpack_message(data)
+    return data
 
 if __name__ == "__main__":
     dir = os.path.dirname(__file__)

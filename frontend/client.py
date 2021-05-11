@@ -113,6 +113,11 @@ def main_read_loop(sock):
         if( type(message) == int):
           logging.error(f"Got Integer from socket : {message}")
 
+        if message == None:
+            settingsstub.connected = False
+            logging.debug("read loop stopped because of disconnect")
+            return
+
         elif message["type"] == "text":
             if message["author"] != chat_client.user:
               user_functions.display_message(

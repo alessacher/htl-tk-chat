@@ -84,6 +84,8 @@ def get_message(sock):
     """
     unpacker = msgpack.Unpacker()
     buffer = recvall(sock)
+    if buffer == None:
+        return None
     unpacker.feed(buffer)
     for object in unpacker:
         return object
