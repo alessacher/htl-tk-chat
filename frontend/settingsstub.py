@@ -15,7 +15,7 @@ import configparser
 import sys
 
 sys.path.append('../client')
-import chat_client 
+import chat_client
 import client_functions
 
 dir = os.path.dirname(__file__)
@@ -30,7 +30,7 @@ def save_frontend_config(settings):
   """Save the settings values to a .config file"""
   logging.info(f"Saving current settings to {config_file}...")
   user = settings.InputUsername.text()
-  addr = settings.InputServerAddress.text()
+  addr = settings.InputServerAddress.text() # ip or hostname
   port = settings.InputPort.text()
   if re.match("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",addr):
     logging.info(f"Got dotted decimal addr from settings-panel {addr}")
@@ -38,20 +38,20 @@ def save_frontend_config(settings):
     logging.info(f"Got hostname from settings-panel: {addr}")
   config.read(config_file)
   if(not config.has_section("frontend")):
-    logging.info("No Config section found, creating one")
+    logging.info("No 'frontend' section found in {config_file}, creating one")
     config.add_section("frontend")
   config.set("frontend", "host", addr)
   config.set("frontend", "port", port)
   config.set("frontend", "user", user)
   config.write(open(config_file,'w'))
-  
+
 @Slot()
 def delete_frontend_config(settings):
   """Delete the settings values in the .config file."""
   logging.info(f"Clearing frontend section in {config_file}...")
   if(config.has_section("frontend")):
     config["frontend"].clear()
-  else: logging.warning("No frontend section found do delete, skipping")
+  else: logging.warning("No 'frontend' section found to delete, skipping")
   config.write(open(config_file,'w'))
 
 @Slot()
@@ -61,8 +61,8 @@ def load_frontend_config(settings):
   try:
     host = config.get("frontend", "host")
     user = config.get("frontend", "user")
-  except: 
-    logging.error("No or empty frontend section found !")
+  except:
+    logging.error("No or empty 'frontend' section found in {config_file} !")
     return
   settings.InputServerAddress.setText(host)
   settings.InputUsername.setText(user)
@@ -84,15 +84,16 @@ def connect_server(settings):
   global connected
 
   if connected == False:
-    ip = settings.InputServerAddress.text()
+    addr = settings.InputServerAddress.text()
     port = int(settings.InputPort.text())
     username = settings.InputUsername.text()
 
-    logging.info(f"stub connecting to server '{ip}:{port}'")
+    logging.info(f"stub connecting to server '{addr}:{port}'")
     settings.InputServerAddress.setReadOnly(True)
+    settings.InputPort.setReadOnly(True)
     settings.InputUsername.setReadOnly(True)
     settings.InputPassword.setReadOnly(True)
-    chat_client.init_backend(ip, port, username)
+    chat_client.init_backend(addr, port, username)
     connected = True
 
 
@@ -110,12 +111,13 @@ def disconnect_server(settings):
 
   if connected == True:
     connected = False
-    ip = settings.InputServerAddress.text()
-    print(f"stub disconnecting from server '{ip}'")
+    addr = settings.InputServerAddress.text()
+    print(f"stub disconnecting from server '{addr}'")
     settings.InputServerAddress.setReadOnly(False)
+    settings.InputPort.setReadOnly(False)
     settings.InputUsername.setReadOnly(False)
     settings.InputPassword.setReadOnly(False)
-    logging.info(f"frontend disconnecting from server '{ip}'")
+    logging.info(f"frontend disconnecting from server '{addr}'")
     client_functions.close_connection(chat_client.my_client.sock)
 
 
