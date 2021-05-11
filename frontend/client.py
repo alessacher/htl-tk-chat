@@ -112,6 +112,7 @@ def main_read_loop(sock):
 
         if( type(message) == int):
           logging.error(f"Got Integer from socket : {message}")
+          continue
 
         if message == None:
             logging.warning("Got None, connection doesn't feel so good")
