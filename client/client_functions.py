@@ -103,7 +103,7 @@ def close_connection(sock):
     sock.close()
 
 def recvall(sock):
-    buffersize = 4096
+    buffersize = 8192
     data = bytearray()
     while True:
         buffer = sock.recv(buffersize)

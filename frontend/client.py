@@ -107,7 +107,6 @@ def stop_read_loop():
 def main_read_loop(sock):
     """Reads the socket in a loop"""
     logging.debug("read loop started")
-    wait_counter = 0
     while settingsstub.connected:
         message = client_functions.get_message(sock)
 
@@ -115,7 +114,6 @@ def main_read_loop(sock):
           logging.error(f"Got Integer from socket : {message}")
 
         elif message["type"] == "text":
-            wait_counter = 0
             if message["author"] != chat_client.user:
               user_functions.display_message(
                   mainwindowui,
@@ -124,12 +122,10 @@ def main_read_loop(sock):
                   message['content'])
 
         elif message["type"] == "users":
-            wait_counter = 0
             user_functions.set_user_table(mainwindowui, message["users"])
             user_functions.set_combo_box(mainwindowui, message["users"])
         
         elif message["type"] == "image":
-            wait_counter = 0
             if message["author"] != chat_client.user:
                 user_functions.display_message(
                     mainwindowui,

@@ -36,15 +36,18 @@ def set_combo_box(window, users):
 
 def display_message(window, sender : str, recipient : str, message : str):
     """Displays a message on the msgList :: QListWidget """
-    window.msgList.addItem(f"{sender} -> {recipient}: {message}")
+    item = QListWidgetItem(f"{sender} -> {recipient}: {message}")
+    window.msgList.addItem(item)
+    window.msgList.scrollToItem(item)
 
 def add_image(window, image):
+  IMAGE_MAX_SIZE = 300
   listwidget = window.msgList
   listitem = QListWidgetItem()
   if os.path.exists(image):
     im = Image.open(image)
     w, h = im.size
-    w, h = min(w, 1000), min(h, 1000)
+    w, h = min(w, IMAGE_MAX_SIZE), min(h, IMAGE_MAX_SIZE)
     icon = QIcon(image)
     size = QSize(w, h)
   else:
@@ -53,7 +56,7 @@ def add_image(window, image):
     icon = QIcon(pixmap)
     size = pixmap.size()
     w, h = size.width(), size.height()
-    w, h = min(w, 1000), min(h, 1000)
+    w, h = min(w, IMAGE_MAX_SIZE), min(h, IMAGE_MAX_SIZE)
     size = QSize(w, h)
 
   listitem.setSizeHint(size)
@@ -62,12 +65,9 @@ def add_image(window, image):
   listwidget.addItem(listitem)
 
 def get_image_file():
-  try:
-    file = QFileDialog.getOpenFileName(
-      filter = ("Images (*.png *.jpg *.jpeg *.bmp *.svg *.tiff);; All Files (*)")
-    )
-  except Exception:
-    pass
+  file = QFileDialog.getOpenFileName(
+    filter = ("Images (*.png *.jpg *.jpeg *.bmp *.svg *.tiff);; All Files (*)")
+  )
   return file[0]
 
 
