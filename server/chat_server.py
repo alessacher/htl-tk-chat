@@ -30,8 +30,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         logging.info(f"Got new connection from {self.client_address}.")
 
         while True:
-            buffer = self.request.recv(4096)
-            message = unpack_message(buffer)
+            message = recvall(self.request)
+            logging.debug(f"Message: {message}")
 
             if message == None:
                 logging.error("Client disconnected forcefully")
@@ -43,7 +43,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     )
                 return
 
-            elif message["type"] == "auth":
+            if message["type"] == "auth":
                 logging.debug(f"Got auth request from {self.client_address}")
                 logging.info(f"New client with username: {message['user']}")
                 for client in self.server.connected_clients:
@@ -116,6 +116,36 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                             "SERVER",
                             self.user
                             )
+            
+            elif message["type"] == "image":
+                logging.debug(f"Got image message request from {self.client_address}")
+                if message["recipient"] == "all":
+                    for client in self.server.connected_clients:
+                        image_message(
+                            client["socket"],
+                            message["content"],
+                            message["author"],
+                            message["recipient"]
+                            )
+                else:
+                    logging.debug(f"New private message to {message['recipient']}")
+                    for client in self.server.connected_clients:
+                        if client["user"] == message["recipient"]:
+                            image_message(
+                                client["socket"],
+                                message["content"],
+                                message["author"],
+                                message["recipient"]
+                                )
+                            break
+                    else:
+                        logging.warning(f"{message['recipient']} unavailable")
+                        text_message(
+                            self.request,
+                            "Private Message was not delivered. Reason: user unavailable",
+                            "SERVER",
+                            self.user
+                            )
 
             elif message["type"] == "close":
                 self.remove_user()
@@ -132,6 +162,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         for client in self.server.connected_clients:
             if client["user"] == self.user:
                 self.server.connected_clients.remove(client)
+
 class SSL_TCPServer(socketserver.TCPServer):
     """A TCP Server with SSL support"""
     def __init__(
@@ -217,6 +248,42 @@ def send_connected_users(sock, usernames):
     packer = msgpack.Packer()
     sock.sendall(packer.pack(message))
     logging.debug(f"Send connected users to client")
+
+def image_message(
+    sock,
+    image : str,
+    author : str,
+    recipient : str = "all"):
+    """Image Message function
+
+    Takes a socket, image, author and recipient as arguments and
+    sends it to the server. The image will be base64 encoded.
+    """
+
+    message = {
+        "type" : "image",
+        "content" : image,
+        "author" : author,
+        "recipient" : recipient,
+        "time" : time.time()
+    }
+    packer = msgpack.Packer()
+    sock.sendall(packer.pack(message))
+    logging.debug(f"Send image to client : {sock.getpeername()}")
+
+
+def recvall(sock):
+    buffersize = 4096
+    data = bytearray()
+    while True:
+        buffer = sock.recv(buffersize)
+        if not buffer:
+            return None
+        data.extend(buffer)
+        if len(buffer) < buffersize:
+            break
+        logging.debug(f"receiving something larger than {buffersize}")
+    return unpack_message(data)
 
 if __name__ == "__main__":
     dir = os.path.dirname(__file__)

@@ -5,20 +5,19 @@
 This is the chat client with Qt6 frontend.
 """
 
+import base64
 import sys
 import os.path
 import logging
 import logging.config
 import threading
 import time
+import tempfile
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt6 import uic # .ui files and their content
 from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import * # cursor shapes
-from PyQt6.QtWidgets import *
 
-import userstub
+import user_functions
 import settingsstub
 from mainwindow import Ui_MainWindow
 from settingswindow import Ui_SettingsWindow
@@ -53,15 +52,32 @@ def send_msg():
         logging.info(f"frontend broadcasting message '{t}'")
     else:
         logging.info(f"frontend sending message '{t}' to '{r}'")
-    display_message(chat_client.user,r,t)
+
+    user_functions.display_message(mainwindowui, chat_client.user, r, t)
     client_functions.text_message(chat_client.my_client.sock, t, chat_client.user, r)
     logging.info(f"frontend calling textmessage with {chat_client.my_client.sock},{t},{chat_client.user}->{r}")
     mainwindowui.InputBar.clear()
 
-
-def display_message(sender : str, recipient : str, message : str):
-    """Displays a message on the msgList :: QListWidget """
-    mainwindowui.msgList.addItem(f"{sender} -> {recipient}: {message}")
+@Slot()
+def send_image_file():
+    logging.debug("Sending new image")
+    image_file = user_functions.get_image_file()
+    recipient = mainwindowui.userSelect.currentText()
+    user_functions.display_message(
+        mainwindowui,
+        chat_client.user,
+        recipient,
+        "")
+    
+    user_functions.add_image(mainwindowui, image_file)
+    logging.debug("displaying image")
+    client_functions.image_message(
+        chat_client.my_client.sock,
+        image_file,
+        chat_client.user,
+        recipient
+    )
+    logging.debug("Image sent")
 
 @Slot()
 def start_read_loop():
@@ -91,21 +107,38 @@ def stop_read_loop():
 def main_read_loop(sock):
     """Reads the socket in a loop"""
     logging.debug("read loop started")
+    wait_counter = 0
     while settingsstub.connected:
         message = client_functions.get_message(sock)
-        print(f"message={message}")
-        if message == None:
-            settingsstub.connected = False
-            logging.debug("read loop stopped because of disconnect")
-            return
+
         if( type(message) == int):
           logging.error(f"Got Integer from socket : {message}")
+
         elif message["type"] == "text":
+            wait_counter = 0
             if message["author"] != chat_client.user:
-              display_message(message['author'],message['recipient'],message['content'])
+              user_functions.display_message(
+                  mainwindowui,
+                  message['author'],
+                  message['recipient'],
+                  message['content'])
+
         elif message["type"] == "users":
-            userstub.set_user_table(mainwindowui, message["users"])
-            userstub.set_combo_box(mainwindowui, message["users"])
+            wait_counter = 0
+            user_functions.set_user_table(mainwindowui, message["users"])
+            user_functions.set_combo_box(mainwindowui, message["users"])
+        
+        elif message["type"] == "image":
+            wait_counter = 0
+            if message["author"] != chat_client.user:
+                user_functions.display_message(
+                    mainwindowui,
+                    message["author"],
+                    message["recipient"],
+                    "")
+                user_functions.add_image(mainwindowui, message["content"])
+            
+
 
     logging.debug("read loop stopped")
     return
@@ -133,5 +166,7 @@ if __name__ == "__main__":
 
     settingswindowui.ButtonStartConnection.pressed.connect(start_read_loop)
     settingswindowui.ButtonEndConnection.pressed.connect(stop_read_loop)
+
+    mainwindowui.addFileButton.pressed.connect(send_image_file)
 
     sys.exit(app.exec())

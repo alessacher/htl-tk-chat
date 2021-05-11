@@ -10,6 +10,7 @@ import msgpack
 import time
 import uuid
 import socket
+import base64
 
 def authenticate(sock, username : str):
     """Authentication function
@@ -49,13 +50,40 @@ def text_message(
     packer = msgpack.Packer()
     sock.sendall(packer.pack(message))
 
+def image_message(
+    sock,
+    image : str,
+    author : str,
+    recipient : str = "all"):
+    """Image Message function
+
+    Takes a socket, image, author and recipient as arguments and
+    sends it to the server. The image will be base64 encoded.
+    """
+
+    with open(image, "rb") as fp:
+        encoded_image = base64.b64encode(fp.read())
+
+    print(len(encoded_image))
+
+    message = {
+        "type" : "image",
+        "content" : encoded_image,
+        "author" : author,
+        "recipient" : recipient,
+        "time" : time.time()
+    }
+
+    packer = msgpack.Packer()
+    sock.sendall(packer.pack(message))
+
 def get_message(sock):
     """Get Message function
 
     Takes a socket argument and returns the message in the pipe.
     """
     unpacker = msgpack.Unpacker()
-    buffer = sock.recv(4096)
+    buffer = recvall(sock)
     unpacker.feed(buffer)
     for object in unpacker:
         return object
@@ -73,3 +101,15 @@ def close_connection(sock):
     packer = msgpack.Packer()
     sock.sendall(packer.pack(message))
     sock.close()
+
+def recvall(sock):
+    buffersize = 4096
+    data = bytearray()
+    while True:
+        buffer = sock.recv(buffersize)
+        if not buffer:
+            return None
+        data.extend(buffer)
+        if len(buffer) < buffersize:
+            break
+    return data

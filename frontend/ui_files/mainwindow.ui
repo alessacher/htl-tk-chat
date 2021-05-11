@@ -75,12 +75,52 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="addFileButton">
+        <property name="text">
+         <string>attach</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item row="0" column="1">
      <widget class="QListWidget" name="msgList">
+      <property name="sizeAdjustPolicy">
+       <enum>QAbstractScrollArea::AdjustToContents</enum>
+      </property>
+      <property name="autoScrollMargin">
+       <number>0</number>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="dragDropMode">
+       <enum>QAbstractItemView::NoDragDrop</enum>
+      </property>
+      <property name="defaultDropAction">
+       <enum>Qt::CopyAction</enum>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::NoSelection</enum>
+      </property>
+      <property name="verticalScrollMode">
+       <enum>QAbstractItemView::ScrollPerPixel</enum>
+      </property>
+      <property name="horizontalScrollMode">
+       <enum>QAbstractItemView::ScrollPerPixel</enum>
+      </property>
       <property name="isWrapping" stdset="0">
        <bool>false</bool>
+      </property>
+      <property name="resizeMode">
+       <enum>QListView::Adjust</enum>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -89,6 +129,12 @@
     </item>
     <item row="0" column="0">
      <widget class="QTableWidget" name="chatList">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="sizeAdjustPolicy">
        <enum>QAbstractScrollArea::AdjustToContents</enum>
       </property>
