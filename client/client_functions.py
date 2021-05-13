@@ -11,6 +11,7 @@ import time
 import uuid
 import socket
 import base64
+import struct
 
 def authenticate(sock, username : str):
     """Authentication function
@@ -28,7 +29,10 @@ def authenticate(sock, username : str):
         "time" : time.time()
     }
     packer = msgpack.Packer()
-    sock.sendall(packer.pack(message)) 
+    message = packer.pack(message)
+    message_length = len(message)
+    message = struct.pack('>I', message_length) + message
+    sock.sendall(message) 
 
 def text_message(
     sock,
@@ -48,7 +52,10 @@ def text_message(
         "time" : time.time()
     }
     packer = msgpack.Packer()
-    sock.sendall(packer.pack(message))
+    message = packer.pack(message)
+    message_length = len(message)
+    message = struct.pack('>I', message_length) + message
+    sock.sendall(message) 
 
 def image_message(
     sock,
@@ -64,8 +71,6 @@ def image_message(
     with open(image, "rb") as fp:
         encoded_image = base64.b64encode(fp.read())
 
-    print(len(encoded_image))
-
     message = {
         "type" : "image",
         "content" : encoded_image,
@@ -75,7 +80,10 @@ def image_message(
     }
 
     packer = msgpack.Packer()
-    sock.sendall(packer.pack(message))
+    message = packer.pack(message)
+    message_length = len(message)
+    message = struct.pack('>I', message_length) + message
+    sock.sendall(message) 
 
 def get_message(sock):
     """Get Message function
@@ -83,7 +91,7 @@ def get_message(sock):
     Takes a socket argument and returns the message in the pipe.
     """
     unpacker = msgpack.Unpacker()
-    buffer = recvall(sock)
+    buffer = recv_msg(sock)
     if buffer == None:
         return None
     unpacker.feed(buffer)
@@ -101,17 +109,25 @@ def close_connection(sock):
         "time" : time.time()
     }
     packer = msgpack.Packer()
-    sock.sendall(packer.pack(message))
-    sock.close()
+    message = packer.pack(message)
+    message_length = len(message)
+    message = struct.pack('>I', message_length) + message
+    sock.sendall(message) 
 
-def recvall(sock):
-    buffersize = 8192
+def recv_msg(sock):
+    bmessage_length = recvall(sock, 4)
+    if not bmessage_length:
+        return None
+    
+    message_length = struct.unpack('>I', bmessage_length)[0]
+
+    return recvall(sock, message_length)
+
+def recvall(sock, msglen):
     data = bytearray()
-    while True:
-        buffer = sock.recv(buffersize)
+    while len(data) < msglen:
+        buffer = sock.recv(msglen - len(data))
         if not buffer:
             return None
         data.extend(buffer)
-        if len(buffer) < buffersize:
-            break
     return data

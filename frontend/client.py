@@ -115,8 +115,9 @@ def main_read_loop(sock):
           continue
 
         if message == None:
-            logging.warning("Got None, connection doesn't feel so good")
-            continue
+            settingsstub.connected = False
+            logging.debug("read loop stopped because of disconnect")
+            return
 
         elif message["type"] == "text":
             if message["author"] != chat_client.user:

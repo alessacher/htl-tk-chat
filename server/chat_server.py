@@ -15,6 +15,8 @@ import logging.config
 import ssl
 import os
 import configparser
+import struct
+import sys
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
     Handles the request in a thread
@@ -31,7 +33,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
         while True:
             try:
-                buffer = recvall(self.request)
+                buffer = recv_msg(self.request)
             except ConnectionResetError:
                 logging.error("Connection reset by peer, client disconnected")
                 self.remove_user()
@@ -42,9 +44,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     )
                 return
             message = unpack_message(buffer)
-            logging.debug(f"Message: {message}")
 
             if type(message) == int:
+                logging.error("fGot Integer from socket : {message}")
                 continue
 
             if message == None:
@@ -245,7 +247,10 @@ def text_message(sock, text : str, author : str, recipient : str = "all"):
         "time" : time.time()
     }
     packer = msgpack.Packer()
-    sock.sendall(packer.pack(message))
+    message = packer.pack(message)
+    message_length = len(message)
+    message = struct.pack('>I', message_length) + message
+    sock.sendall(message) 
     logging.debug(f"Send message '{text}' to client : {sock.getpeername()}")
 
 def send_connected_users(sock, usernames):
@@ -260,7 +265,10 @@ def send_connected_users(sock, usernames):
         "time" : time.time()
     }
     packer = msgpack.Packer()
-    sock.sendall(packer.pack(message))
+    message = packer.pack(message)
+    message_length = len(message)
+    message = struct.pack('>I', message_length) + message
+    sock.sendall(message) 
     logging.debug(f"Send connected users to client")
 
 def image_message(
@@ -282,21 +290,30 @@ def image_message(
         "time" : time.time()
     }
     packer = msgpack.Packer()
-    sock.sendall(packer.pack(message))
+    message = packer.pack(message)
+    message_length = len(message)
+    message = struct.pack('>I', message_length) + message
+    sock.sendall(message) 
     logging.debug(f"Send image to client : {sock.getpeername()}")
 
+def recv_msg(sock):
+    bmessage_length = recvall(sock, 4)
+    if not bmessage_length:
+        return None
+    
+    message_length = struct.unpack('>I', bmessage_length)[0]
+    logging.debug(f"receiving message of size {message_length} bytes")
 
-def recvall(sock):
-    buffersize = 1024
+    return recvall(sock, message_length)
+
+def recvall(sock, msglen):
     data = bytearray()
-    while True:
-        buffer = sock.recv(buffersize)
+    while len(data) < msglen:
+        buffer = sock.recv(msglen - len(data))
         if not buffer:
             return None
         data.extend(buffer)
-        if len(buffer) < buffersize:
-            break
-        logging.debug(f"receiving something larger than {buffersize}")
+        logging.debug(f"extend data about {len(buffer)} bytes. data now at {len(data)} bytes")
     return data
 
 if __name__ == "__main__":
