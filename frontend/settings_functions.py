@@ -14,6 +14,7 @@ import hashlib
 import configparser
 import sys
 
+import client
 sys.path.append('../client')
 import chat_client
 import client_functions

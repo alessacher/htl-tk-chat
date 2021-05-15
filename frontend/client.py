@@ -42,48 +42,48 @@ class MainWindow(QMainWindow):
 
 @Slot()
 def send_msg():
-  try:
     """Send message function
 
     This function is called when the user presses Enter,
     to send the message."""
-    r = mainwindowui.userSelect.currentText()
-    t = mainwindowui.InputBar.text()
-    if r == "all":
-        logging.info(f"frontend broadcasting message '{t}'")
-    else:
-        logging.info(f"frontend sending message '{t}' to '{r}'")
+    if settings_functions.connected == True:
+        r = mainwindowui.userSelect.currentText()
+        t = mainwindowui.InputBar.text()
+        if r == "all":
+            logging.info(f"frontend broadcasting message '{t}'")
+        else:
+            logging.info(f"frontend sending message '{t}' to '{r}'")
 
-    user_functions.display_message(mainwindowui, chat_client.user, r, t)
-    client_functions.text_message(chat_client.my_client.sock, t, chat_client.user, r)
-    logging.info(f"frontend calling textmessage with {chat_client.my_client.sock},{t},{chat_client.user}->{r}")
-    mainwindowui.InputBar.clear()
-  except AttributeError as msg: # EAFP
-    logging.error("Caught an Attribute error, did the user connect ?\n",msg)
+        user_functions.display_message(mainwindowui, chat_client.user, r, t)
+        client_functions.text_message(chat_client.my_client.sock, t, chat_client.user, r)
+        logging.info(f"frontend calling textmessage with {chat_client.my_client.sock},{t},{chat_client.user}->{r}")
+        mainwindowui.InputBar.clear()
+    else:
+        logging.info("User not connected to a server {settings_functions.connected}, skipping")
 
 @Slot()
 def send_image_file():
-  try:
-    logging.debug("Sending new image")
-    image_file = user_functions.get_image_file()
-    recipient = mainwindowui.userSelect.currentText()
-    user_functions.display_message(
-        mainwindowui,
-        chat_client.user,
-        recipient,
-        "")
+    if settings_functions.connected == True:
+        logging.debug("Sending new image")
+        image_file = user_functions.get_image_file()
+        recipient = mainwindowui.userSelect.currentText()
+        user_functions.display_message(
+            mainwindowui,
+            chat_client.user,
+            recipient,
+            "")
 
-    user_functions.add_image(mainwindowui, image_file)
-    logging.debug("displaying image")
-    client_functions.image_message(
-        chat_client.my_client.sock,
-        image_file,
-        chat_client.user,
-        recipient
-    )
-    logging.debug("Image sent")
-  except AttributeError as msg: # EAFP
-      logging.error("Caught an attribute error, did the user connect ?\n",msg)
+        user_functions.add_image(mainwindowui, image_file)
+        logging.debug("displaying image")
+        client_functions.image_message(
+            chat_client.my_client.sock,
+            image_file,
+            chat_client.user,
+            recipient
+        )
+        logging.debug("Image sent")
+    else:
+        logging.info("User not connected to a server, skipping")
 
 
 @Slot()
