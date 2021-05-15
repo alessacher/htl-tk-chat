@@ -1,5 +1,5 @@
-"""Settings stub
-Stub for settings window since server is not yet implemented.
+"""Settings Module
+functions behind the settings window ui-elements
 """
 import logging
 import logging.config
@@ -38,7 +38,7 @@ def save_frontend_config(settings):
     logging.info(f"Got hostname from settings-panel: {addr}")
   config.read(config_file)
   if(not config.has_section("frontend")):
-    logging.info("No 'frontend' section found in {config_file}, creating one")
+    logging.info(f"No 'frontend' section found in {config_file}, creating one")
     config.add_section("frontend")
   config.set("frontend", "host", addr)
   config.set("frontend", "port", port)

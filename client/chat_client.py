@@ -92,10 +92,10 @@ dir = os.path.dirname(__file__)
 config_file = os.path.join(dir, "client.conf")
 cconfig = configparser.ConfigParser()
 
-if os.path.exists(config_file):
+if os.path.exists(config_file) and cconfig.has_section("SSL") and cconfig.has_section("frontend"):
     cconfig.read(config_file)
-
 else:
+    # setup default configuration file 
     cconfig["SSL"] = {
         "enable_ssl" : False
     }
@@ -104,6 +104,7 @@ else:
         "port" : 9999,
         "user" : "guest"
     }
+    cconfig.write(open(config_file,'w'))
 
 if len(sys.argv) == 4 :
     host = sys.argv[1]
@@ -132,12 +133,14 @@ if cconfig.has_section("SSL"):
             )
     else:
         my_client = Client(host, port)
+else:
+    print(f"No SSL Section found in {config_file}!")
 
 def init_backend(ip = None, port = None, username = user):
     global shutdown, user
     try:
-        my_client.connect(ip, port)
         user = username
+        my_client.connect(ip, port)
         print(f"authenticating on {my_client.sock} as {user}")
         client_functions.authenticate(my_client.sock, username)
 

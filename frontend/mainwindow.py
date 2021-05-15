@@ -33,13 +33,10 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.userSelect)
         self.InputBar = QtWidgets.QLineEdit(self.centralwidget)
         self.InputBar.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
-        self.InputBar.setStatusTip("")
         self.InputBar.setAutoFillBackground(False)
-        self.InputBar.setStyleSheet("")
         self.InputBar.setInputMethodHints(QtCore.Qt.InputMethodHints.ImhNone)
         self.InputBar.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
         self.InputBar.setCursorPosition(0)
-        self.InputBar.setReadOnly(False)
         self.InputBar.setClearButtonEnabled(True)
         self.InputBar.setObjectName("InputBar")
         self.horizontalLayout.addWidget(self.InputBar)
@@ -79,7 +76,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.chatList, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 707, 35))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 707, 24))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -112,13 +109,3 @@ class Ui_MainWindow(object):
         self.actionExit.setText(_translate("MainWindow", "E&xit"))
         self.actionExport.setText(_translate("MainWindow", "&Export"))
         self.actionServer.setText(_translate("MainWindow", "Server"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec())

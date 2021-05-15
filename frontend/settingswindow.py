@@ -57,19 +57,13 @@ class Ui_SettingsWindow(object):
         self.ConncetionLabel.setObjectName("ConncetionLabel")
         self.AuthLayout.addWidget(self.ConncetionLabel)
         self.InputServerAddress = QtWidgets.QLineEdit(self.TabInformation)
-        self.InputServerAddress.setStatusTip("")
-        self.InputServerAddress.setWhatsThis("")
-        self.InputServerAddress.setInputMask("")
-        self.InputServerAddress.setText("")
         self.InputServerAddress.setReadOnly(False)
         self.InputServerAddress.setObjectName("InputServerAddress")
         self.AuthLayout.addWidget(self.InputServerAddress)
         self.InputPort = QtWidgets.QLineEdit(self.TabInformation)
-        self.InputPort.setText("")
         self.InputPort.setObjectName("InputPort")
         self.AuthLayout.addWidget(self.InputPort)
         self.InputUsername = QtWidgets.QLineEdit(self.TabInformation)
-        self.InputUsername.setText("")
         self.InputUsername.setObjectName("InputUsername")
         self.AuthLayout.addWidget(self.InputUsername)
         self.InputPassword = QtWidgets.QLineEdit(self.TabInformation)
@@ -124,13 +118,3 @@ class Ui_SettingsWindow(object):
         self.ButtonEndConnection.setText(_translate("SettingsWindow", "Disconnect"))
         self.MainTabBar.setTabText(self.MainTabBar.indexOf(self.TabInformation), _translate("SettingsWindow", "Information"))
         self.MainTabBar.setTabText(self.MainTabBar.indexOf(self.TabSettings), _translate("SettingsWindow", "Settings"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    SettingsWindow = QtWidgets.QMainWindow()
-    ui = Ui_SettingsWindow()
-    ui.setupUi(SettingsWindow)
-    SettingsWindow.show()
-    sys.exit(app.exec())

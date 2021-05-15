@@ -103,18 +103,6 @@
             <property name="toolTip">
              <string>IP-Address of the server in dotted decimal, Port is optional</string>
             </property>
-            <property name="statusTip">
-             <string/>
-            </property>
-            <property name="whatsThis">
-             <string/>
-            </property>
-            <property name="inputMask">
-             <string/>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
             <property name="readOnly">
              <bool>false</bool>
             </property>
@@ -125,9 +113,6 @@
           </item>
           <item>
            <widget class="QLineEdit" name="InputPort">
-            <property name="text">
-             <string/>
-            </property>
             <property name="placeholderText">
              <string>Port</string>
             </property>
@@ -137,9 +122,6 @@
            <widget class="QLineEdit" name="InputUsername">
             <property name="toolTip">
              <string>Your Username to connect to the chat-server</string>
-            </property>
-            <property name="text">
-             <string/>
             </property>
             <property name="placeholderText">
              <string>Username</string>

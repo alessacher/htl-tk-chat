@@ -18,7 +18,7 @@ from PyQt6 import uic # .ui files and their content
 from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
 
 import user_functions
-import settingsstub
+import settings_functions
 from mainwindow import Ui_MainWindow
 from settingswindow import Ui_SettingsWindow
 
@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         logging.info("Application closing")
-        if settingsstub.connected == True:
+        if settings_functions.connected == True:
             client_functions.close_connection(chat_client.my_client.sock)
         event.accept()
         if display_thread != None:
@@ -42,6 +42,7 @@ class MainWindow(QMainWindow):
 
 @Slot()
 def send_msg():
+  try:
     """Send message function
 
     This function is called when the user presses Enter,
@@ -57,9 +58,12 @@ def send_msg():
     client_functions.text_message(chat_client.my_client.sock, t, chat_client.user, r)
     logging.info(f"frontend calling textmessage with {chat_client.my_client.sock},{t},{chat_client.user}->{r}")
     mainwindowui.InputBar.clear()
+  except AttributeError as msg: # EAFP
+    logging.error("Caught an Attribute error, did the user connect ?\n",msg)
 
 @Slot()
 def send_image_file():
+  try:
     logging.debug("Sending new image")
     image_file = user_functions.get_image_file()
     recipient = mainwindowui.userSelect.currentText()
@@ -68,7 +72,7 @@ def send_image_file():
         chat_client.user,
         recipient,
         "")
-    
+
     user_functions.add_image(mainwindowui, image_file)
     logging.debug("displaying image")
     client_functions.image_message(
@@ -78,6 +82,9 @@ def send_image_file():
         recipient
     )
     logging.debug("Image sent")
+  except AttributeError as msg: # EAFP
+      logging.error("Caught an attribute error, did the user connect ?\n",msg)
+
 
 @Slot()
 def start_read_loop():
@@ -86,7 +93,7 @@ def start_read_loop():
     global display_thread
 
     logging.debug("Starting read loop thread")
-    if settingsstub.connected == True and display_thread == None:
+    if settings_functions.connected == True and display_thread == None:
         display_thread = threading.Thread(target=main_read_loop, args=(chat_client.my_client.sock,))
         display_thread.start()
 
@@ -107,7 +114,7 @@ def stop_read_loop():
 def main_read_loop(sock):
     """Reads the socket in a loop"""
     logging.debug("read loop started")
-    while settingsstub.connected:
+    while settings_functions.connected:
         message = client_functions.get_message(sock)
 
         if( type(message) == int):
@@ -115,7 +122,7 @@ def main_read_loop(sock):
           continue
 
         if message == None:
-            settingsstub.connected = False
+            settings_functions.connected = False
             logging.debug("read loop stopped because of disconnect")
             return
 
@@ -130,7 +137,7 @@ def main_read_loop(sock):
         elif message["type"] == "users":
             user_functions.set_user_table(mainwindowui, message["users"])
             user_functions.set_combo_box(mainwindowui, message["users"])
-        
+
         elif message["type"] == "image":
             if message["author"] != chat_client.user:
                 user_functions.display_message(
@@ -139,7 +146,7 @@ def main_read_loop(sock):
                     message["recipient"],
                     "")
                 user_functions.add_image(mainwindowui, message["content"])
-            
+
 
 
     logging.debug("read loop stopped")
@@ -152,7 +159,7 @@ if __name__ == "__main__":
     logging.info("Client Logging ready")
 
     app = QApplication(sys.argv)
-    app.setStyle('Breeze') # only Windows or Fusion
+    app.setStyle("Breeze") # only Windows or Fusion
 
     mainwindow = MainWindow()
     mainwindowui = Ui_MainWindow()
@@ -164,7 +171,7 @@ if __name__ == "__main__":
     settingswindowui = Ui_SettingsWindow()
     settingswindowui.setupUi(settingswindow)
     mainwindowui.actionServer.triggered.connect(settingswindow.show)
-    settingsstub.init_settings_window(settingswindowui)
+    settings_functions.init_settings_window(settingswindowui)
 
     settingswindowui.ButtonStartConnection.pressed.connect(start_read_loop)
     settingswindowui.ButtonEndConnection.pressed.connect(stop_read_loop)
