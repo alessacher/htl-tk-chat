@@ -16,7 +16,8 @@ import ssl
 import os
 import configparser
 import struct
-import sys
+import signal
+
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
     Handles the request in a thread
@@ -371,5 +372,4 @@ if __name__ == "__main__":
         server_thread.start()
         logging.info("Started Server Thread")
 
-        while True:
-            pass
+        signal.pause()
