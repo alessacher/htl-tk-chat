@@ -28,11 +28,8 @@ def authenticate(sock, username : str):
         "uuid" : str(uuid.uuid3(uuid.NAMESPACE_DNS, socket.gethostname())),
         "time" : time.time()
     }
-    packer = msgpack.Packer()
-    message = packer.pack(message)
-    message_length = len(message)
-    message = struct.pack('>I', message_length) + message
-    sock.sendall(message) 
+    
+    send_encoded(sock, message)
 
 def text_message(
     sock,
@@ -51,11 +48,8 @@ def text_message(
         "recipient" : recipient,
         "time" : time.time()
     }
-    packer = msgpack.Packer()
-    message = packer.pack(message)
-    message_length = len(message)
-    message = struct.pack('>I', message_length) + message
-    sock.sendall(message) 
+    
+    send_encoded(sock, message)
 
 def image_message(
     sock,
@@ -79,11 +73,7 @@ def image_message(
         "time" : time.time()
     }
 
-    packer = msgpack.Packer()
-    message = packer.pack(message)
-    message_length = len(message)
-    message = struct.pack('>I', message_length) + message
-    sock.sendall(message) 
+    send_encoded(sock, message)
 
 def get_message(sock):
     """Get Message function
@@ -108,13 +98,11 @@ def close_connection(sock):
         "type" : "close",
         "time" : time.time()
     }
-    packer = msgpack.Packer()
-    message = packer.pack(message)
-    message_length = len(message)
-    message = struct.pack('>I', message_length) + message
-    sock.sendall(message) 
+    
+    send_encoded(sock, message)
 
 def recv_msg(sock):
+    """Receive a whole message"""
     bmessage_length = recvall(sock, 4)
     if not bmessage_length:
         return None
@@ -124,6 +112,7 @@ def recv_msg(sock):
     return recvall(sock, message_length)
 
 def recvall(sock, msglen):
+    """helper function which receives all up to msglen"""
     data = bytearray()
     while len(data) < msglen:
         buffer = sock.recv(msglen - len(data))
@@ -131,3 +120,35 @@ def recvall(sock, msglen):
             return None
         data.extend(buffer)
     return data
+
+def send_encoded(sock, message):
+    """Helper function to send encoded the message"""
+    packer = msgpack.Packer()
+    message = packer.pack(message)
+    message_length = len(message)
+    message = struct.pack('>I', message_length) + message
+    sock.sendall(message)
+
+def check_ssl(sock):
+    """Check if the server supports ssl"""
+
+    message = {
+        "type" : "sslcheck"
+    }
+
+    send_encoded(sock, message)
+
+    response = get_message(sock)
+    return response
+
+def get_ssl_cert(sock):
+    """Check if the server supports ssl"""
+
+    message = {
+        "type" : "sslcert"
+    }
+
+    send_encoded(sock, message)
+
+    response = get_message(sock)
+    return response

@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 """
-CLI bassed Chat Client
+Chat Client backend
 """
 
 import socket
@@ -34,17 +34,41 @@ class SSL_Client:
 
         dir = os.path.dirname(__file__)
         self.__certfile = os.path.join(dir, certfile)
+        self.__ssl_version = ssl_version
+        self.__ip = ip
+        self.__port = port
 
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock = ssl.wrap_socket(
-            self.sock,
-            ca_certs=self.__certfile,
-            cert_reqs=ssl.CERT_REQUIRED,
-            ssl_version=ssl_version
-        )
+    def connect(self, ip = None, port = None):
+        if ip == None and port == None:
+            ip = self.__ip
+            port = self.__port
 
-        self.sock.connect((ip,port))
-        self.sock.setblocking(True)
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect((ip, port))
+
+            ssl_status = client_functions.check_ssl(sock)
+            
+        if ssl_status:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect((ip, port))
+                cert = client_functions.get_ssl_cert(sock)
+
+                with open("cert.pem.tmp", "wb") as fp:
+                    fp.write(cert)
+
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock = ssl.wrap_socket(
+                self.sock,
+                ca_certs="cert.pem.tmp",
+                cert_reqs=ssl.CERT_REQUIRED,
+                ssl_version=self.__ssl_version
+            )
+
+            self.sock.connect((ip, port+1))
+        
+        else:
+            raise ssl.SSL_ERROR_SSL
 
 def main_read_loop(sock):
     """Reads the socket in a loop"""
@@ -92,12 +116,14 @@ dir = os.path.dirname(__file__)
 config_file = os.path.join(dir, "client.conf")
 cconfig = configparser.ConfigParser()
 
-if os.path.exists(config_file) and cconfig.has_section("SSL") and cconfig.has_section("frontend"):
+
+if os.path.exists(config_file) and "SSL" in cconfig.sections() and "frontend" in cconfig.sections():
     cconfig.read(config_file)
 else:
     # setup default configuration file 
     cconfig["SSL"] = {
-        "enable_ssl" : False
+        "enable_ssl" : False,
+        "ssl_version" : "TlSv1"
     }
     cconfig["frontend"] = {
         "host" : "ehw12.ddns.net",
@@ -128,7 +154,6 @@ if cconfig.has_section("SSL"):
         my_client = SSL_Client(
             host,
             port,
-            cconfig["SSL"]["certfile"],
             eval("".join(("ssl.PROTOCOL_",cconfig["SSL"]["ssl_version"])))
             )
     else:

@@ -17,6 +17,7 @@ import os
 import configparser
 import struct
 import signal
+import sys
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
@@ -60,7 +61,20 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     )
                 return
 
-            if message["type"] == "auth":
+            if message["type"] == "sslcheck":
+                response = config["SSL"].getboolean("enable_ssl")
+                send_encoded(self.request, response)
+                return
+
+            elif message["type"] == "sslcert":
+                certfile = config["SSL"]["certfile"]
+
+                with open(certfile, "rb") as cert:
+                    cert_buffer = cert.read()
+                
+                send_encoded(self.request, cert_buffer)
+
+            elif message["type"] == "auth":
                 logging.debug(f"Got auth request from {self.client_address}")
                 logging.info(f"New client with username: {message['user']}")
                 for client in self.server.connected_clients:
@@ -80,6 +94,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                                 "SERVER"
                                 )
                             client["socket"] = self.request
+                            connected_users = [x["user"] for x in self.server.connected_clients]
+                            for client in self.server.connected_clients:
+                                send_connected_users(
+                                    client["socket"],
+                                    connected_users
+                                )
                             return
 
                 self.server.connected_clients.append(
@@ -247,11 +267,7 @@ def text_message(sock, text : str, author : str, recipient : str = "all"):
         "recipient" : recipient,
         "time" : time.time()
     }
-    packer = msgpack.Packer()
-    message = packer.pack(message)
-    message_length = len(message)
-    message = struct.pack('>I', message_length) + message
-    sock.sendall(message) 
+    send_encoded(sock, message)
     logging.debug(f"Send message '{text}' to client : {sock.getpeername()}")
 
 def send_connected_users(sock, usernames):
@@ -265,11 +281,7 @@ def send_connected_users(sock, usernames):
         "users" : usernames,
         "time" : time.time()
     }
-    packer = msgpack.Packer()
-    message = packer.pack(message)
-    message_length = len(message)
-    message = struct.pack('>I', message_length) + message
-    sock.sendall(message) 
+    send_encoded(sock, message)
     logging.debug(f"Send connected users to client")
 
 def image_message(
@@ -290,11 +302,7 @@ def image_message(
         "recipient" : recipient,
         "time" : time.time()
     }
-    packer = msgpack.Packer()
-    message = packer.pack(message)
-    message_length = len(message)
-    message = struct.pack('>I', message_length) + message
-    sock.sendall(message) 
+    send_encoded(sock, message)
     logging.debug(f"Send image to client : {sock.getpeername()}")
 
 def recv_msg(sock):
@@ -316,6 +324,24 @@ def recvall(sock, msglen):
         data.extend(buffer)
         logging.debug(f"extend data about {len(buffer)} bytes. data now at {len(data)} bytes")
     return data
+
+def send_encoded(sock, message):
+    """Helper function to send encoded the message"""
+    packer = msgpack.Packer()
+    message = packer.pack(message)
+    message_length = len(message)
+    message = struct.pack('>I', message_length) + message
+    sock.sendall(message)
+
+def setup_server(server):
+    """function that setups the server"""
+    # creating main server thread
+    server_thread = threading.Thread(target=server.serve_forever)
+
+    # telling the thread to run in the background
+    server_thread.setDaemon(True)
+    server_thread.start()
+    logging.info("Started Server Thread")
 
 if __name__ == "__main__":
     dir = os.path.dirname(__file__)
@@ -348,28 +374,30 @@ if __name__ == "__main__":
 
     if config["SSL"].getboolean("enable_ssl"):
         logging.info("SSL ENABLED")
-        server = SSL_ThreadedTCPServer(
+        ssl_server = SSL_ThreadedTCPServer(
             config["SSL"]["certfile"],
             config["SSL"]["keyfile"],
-            (HOST, PORT),
+            (HOST, PORT+1),
             ThreadedTCPRequestHandler,
             eval("".join(("ssl.PROTOCOL_",config["SSL"]["ssl_version"])))
             )
 
     else:
         logging.info("SSL DISABLED")
-        server = ThreadedTCPServer(
-            (HOST,PORT),
-            ThreadedTCPRequestHandler
-        )
 
-    with server:
-        # creating main server thread
-        server_thread = threading.Thread(target=server.serve_forever)
+    server = ThreadedTCPServer(
+        (HOST,PORT),
+        ThreadedTCPRequestHandler
+    )
 
-        # telling the thread to run in the background
-        server_thread.setDaemon(True)
-        server_thread.start()
-        logging.info("Started Server Thread")
+    if config["SSL"].getboolean("enable_ssl"):
+        setup_server(ssl_server)
+    
+    setup_server(server)
 
+    if sys.platform == "linux":
         signal.pause()
+    
+    else:
+        while True:
+            pass
