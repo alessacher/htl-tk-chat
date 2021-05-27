@@ -10,6 +10,8 @@ import ssl
 import configparser
 import os
 import sys
+import getpass
+
 class Client:
     """Intializes the Socket which is available as self.sock"""
     def __init__(self, ip : str, port : int):
@@ -128,7 +130,7 @@ else:
     cconfig["frontend"] = {
         "host" : "ehw12.ddns.net",
         "port" : 9999,
-        "user" : "guest"
+        "user" : getpass.getuser()
     }
     cconfig.write(open(config_file,'w'))
 
