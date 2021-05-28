@@ -294,3 +294,7 @@ __pycache__
 
 # server log file
 chatserver.log
+
+#exclude configs
+server.conf
+client.conf

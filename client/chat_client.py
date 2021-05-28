@@ -31,11 +31,9 @@ class SSL_Client:
         self,
         ip : str,
         port : int,
-        certfile : str,
         ssl_version):
 
         dir = os.path.dirname(__file__)
-        self.__certfile = os.path.join(dir, certfile)
         self.__ssl_version = ssl_version
         self.__ip = ip
         self.__port = port
@@ -119,13 +117,13 @@ config_file = os.path.join(dir, "client.conf")
 cconfig = configparser.ConfigParser()
 
 
-if os.path.exists(config_file) and "SSL" in cconfig.sections() and "frontend" in cconfig.sections():
+if os.path.exists(config_file):
     cconfig.read(config_file)
 else:
     # setup default configuration file 
     cconfig["SSL"] = {
         "enable_ssl" : False,
-        "ssl_version" : "TlSv1"
+        "ssl_version" : "TLSv1"
     }
     cconfig["frontend"] = {
         "host" : "ehw12.ddns.net",
