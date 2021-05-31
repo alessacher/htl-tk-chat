@@ -5,22 +5,22 @@
 This is the chat client with Qt6 frontend.
 """
 
-import base64
 import sys
 import os.path
+from os import chdir
 import logging
 import logging.config
 import threading
-import time
-import tempfile
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
-from PyQt6 import uic # .ui files and their content
-from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
 
 import user_functions
 import settings_functions
 from mainwindow import Ui_MainWindow
 from settingswindow import Ui_SettingsWindow
+
+dir = os.path.dirname(__file__)
+os.chdir(dir)
 
 sys.path.append('../client')
 import chat_client
@@ -65,7 +65,12 @@ def send_msg():
 def send_image_file():
     if settings_functions.connected == True:
         logging.debug("Sending new image")
+        
         image_file = user_functions.get_image_file()
+        
+        if image_file is None:
+            logging.error("File not found, not sending image")
+            return
         recipient = mainwindowui.userSelect.currentText()
         user_functions.display_message(
             mainwindowui,
@@ -153,8 +158,7 @@ def main_read_loop(sock):
     return
 
 if __name__ == "__main__":
-    dir = os.path.dirname(__file__)
-    log_conf = os.path.join(dir, "logger.conf")
+    log_conf = "logger.conf"
     logging.config.fileConfig(log_conf)
     logging.info("Client Logging ready")
 

@@ -3,16 +3,13 @@ This is just a stub for users since other functionalities
 are not implemented at the moment.
 """
 import base64
-from genericpath import exists
 import logging
 import logging.config
 import os.path
-from sys import path_importer_cache
 from PIL import Image
-from PyQt6.QtWidgets import QTableWidgetItem, QListWidgetItem, QFileDialog
-from PyQt6.QtGui import QIcon, QPixmap
-from PyQt6.QtCore import QSize
-from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot
+from PyQt5.QtWidgets import QTableWidgetItem, QListWidgetItem, QFileDialog
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import QSize
 
 
 def set_user_table(window, users):
@@ -65,9 +62,11 @@ def add_image(window, image):
   listwidget.addItem(listitem)
 
 def get_image_file():
-  file = QFileDialog.getOpenFileName(
-    filter = ("Images (*.png *.jpg *.jpeg *.bmp *.svg *.tiff);; All Files (*)")
+  file = QFileDialog.getOpenFileName(None,
+    filter = ("Images (*.png *.jpg *.jpeg *.bmp *.tiff *gif);; All Files (*)")
   )
+  if not file[0]:
+    return None
   return file[0]
 
 

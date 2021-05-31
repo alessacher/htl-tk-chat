@@ -9,8 +9,12 @@ import threading
 import ssl
 import configparser
 import os
+from os import chdir
 import sys
 import getpass
+
+dir = os.path.dirname(__file__)
+os.chdir(dir)
 
 class Client:
     """Intializes the Socket which is available as self.sock"""
@@ -33,7 +37,6 @@ class SSL_Client:
         port : int,
         ssl_version):
 
-        dir = os.path.dirname(__file__)
         self.__ssl_version = ssl_version
         self.__ip = ip
         self.__port = port
@@ -112,8 +115,7 @@ def main_write_loop(sock, user):
 
 shutdown = False
 
-dir = os.path.dirname(__file__)
-config_file = os.path.join(dir, "client.conf")
+config_file = "client.conf"
 cconfig = configparser.ConfigParser()
 
 

@@ -3,16 +3,12 @@ functions behind the settings window ui-elements
 """
 import logging
 import logging.config
-from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
+from PyQt5.QtCore import pyqtSlot as Slot # ui elements communication
 import os.path
-from PyQt6 import QtWidgets, uic # .ui files and their content
-import re # regex
-from PyQt6.QtCore import Qt
-from PyQt6 import QtGui # cursor shapes
-import time
-import hashlib
+from os import chdir
 import configparser
 import sys
+import re
 
 import client
 sys.path.append('../client')
@@ -20,7 +16,8 @@ import chat_client
 import client_functions
 
 dir = os.path.dirname(__file__)
-config_file = os.path.join(dir, "../client/client.conf")
+os.chdir(dir)
+config_file = "../client/client.conf"
 config = configparser.ConfigParser() # client config file
 config.read(config_file)
 
