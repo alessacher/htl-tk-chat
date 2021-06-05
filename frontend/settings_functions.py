@@ -41,6 +41,10 @@ def save_frontend_config(settings):
   config.set("frontend", "host", addr)
   config.set("frontend", "port", port)
   config.set("frontend", "user", user)
+
+  ssl = str(settings.SSLCheckBox.isChecked())
+  config.set("SSL", "enable_ssl", ssl)
+
   config.write(open(config_file,'w'))
 
 @Slot()

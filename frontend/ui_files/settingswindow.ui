@@ -70,23 +70,7 @@
         <string>Information</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="1" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout"/>
-        </item>
-        <item row="0" column="0">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="5" column="0">
+        <item row="6" column="0">
          <layout class="QHBoxLayout" name="AuthLayout">
           <item>
            <widget class="QLabel" name="ConncetionLabel">
@@ -128,23 +112,17 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QLineEdit" name="InputPassword">
-            <property name="toolTip">
-             <string>Your Password for your User</string>
-            </property>
-            <property name="echoMode">
-             <enum>QLineEdit::Password</enum>
-            </property>
-            <property name="placeholderText">
-             <string>Password</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </item>
-        <item row="6" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="SSLCheckBox">
+          <property name="text">
+           <string>Use SSL</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <layout class="QHBoxLayout" name="ConnectionButtons">
           <property name="topMargin">
            <number>0</number>
           </property>
@@ -173,17 +151,29 @@
           </item>
          </layout>
         </item>
+        <item row="2" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout"/>
+        </item>
+        <item row="0" column="0">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="TabSettings">
        <attribute name="title">
         <string>Settings</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0">
-         <widget class="QToolBox" name="SettingsTabBar"/>
-        </item>
-       </layout>
+       <layout class="QGridLayout" name="gridLayout_4"/>
       </widget>
      </widget>
     </item>
