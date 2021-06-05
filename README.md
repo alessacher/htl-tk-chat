@@ -13,7 +13,7 @@ After this you can open the documentation.pdf.
 For lazy people or Windows folks, a precompiled version of the documentation can be found [here](./documentation.pdf).
 # Project description
 A Server and client for a self-written chat application.
-The client interface uses Qt 6, the server uses sockets and msgpack.
+The client interface uses Qt 5, the server uses sockets and msgpack.
 ## Planned features:
 - Selecting users to send messages to ("Public", "Private")
 - Notify users when new messages are available (for them)
@@ -31,7 +31,7 @@ The client interface uses Qt 6, the server uses sockets and msgpack.
 - Database server-side for message-history, users, authentification
 - For the Database SQLite, cause it is a lightweight disk-based database and doesn't require a separate server process. Also the sqlite3 python module is in [The Python Standard Library](https://docs.python.org/3/library/).
 - We don't care about networking failures, we let tcp handle that.
-- Interface in ~~tkinter~~ or **Qt 6** (via PyQt6)
+- Interface in ~~tkinter~~ or **Qt 5** (via PyQt5)
 - Doxygen for documentation
 
 # Rules

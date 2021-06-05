@@ -2,7 +2,7 @@
 
 """The Chat Client
 
-This is the chat client with Qt6 frontend.
+This is the chat client with Qt5 frontend.
 """
 
 import sys
@@ -65,9 +65,9 @@ def send_msg():
 def send_image_file():
     if settings_functions.connected == True:
         logging.debug("Sending new image")
-        
+
         image_file = user_functions.get_image_file()
-        
+
         if image_file is None:
             logging.error("File not found, not sending image")
             return
