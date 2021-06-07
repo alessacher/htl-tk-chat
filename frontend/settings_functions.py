@@ -8,15 +8,14 @@ import os.path
 from os import chdir
 import configparser
 import sys
-import re
 
 import client
 sys.path.append('../client')
-import chat_client
+import backend
 import client_functions
 
 dir = os.path.dirname(__file__)
-os.chdir(dir)
+chdir(dir)
 config_file = "../client/client.conf"
 config = configparser.ConfigParser() # client config file
 config.read(config_file)
@@ -28,12 +27,8 @@ def save_frontend_config(settings):
   """Save the settings values to a .config file"""
   logging.info(f"Saving current settings to {config_file}...")
   user = settings.InputUsername.text()
-  addr = settings.InputServerAddress.text() # ip or hostname
+  addr = settings.InputServerAddress.text()
   port = settings.InputPort.text()
-  if re.match("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",addr):
-    logging.info(f"Got dotted decimal addr from settings-panel {addr}")
-  elif re.match("^\w*\.(\w*|\.)*$",addr):
-    logging.info(f"Got hostname from settings-panel: {addr}")
   config.read(config_file)
   if(not config.has_section("frontend")):
     logging.info(f"No 'frontend' section found in {config_file}, creating one")
@@ -42,8 +37,8 @@ def save_frontend_config(settings):
   config.set("frontend", "port", port)
   config.set("frontend", "user", user)
 
-  ssl = str(settings.SSLCheckBox.isChecked())
-  config.set("SSL", "enable_ssl", ssl)
+  en_ssl = str(settings.SSLCheckBox.isChecked())
+  config.set("SSL", "enable_ssl", en_ssl)
 
   config.write(open(config_file,'w'))
 
@@ -63,13 +58,17 @@ def load_frontend_config(settings):
   try:
     host = config.get("frontend", "host")
     user = config.get("frontend", "user")
+    port = config.get("frontend", "port")
+    en_ssl = config.getboolean("SSL", "enable_ssl")
   except:
     logging.error("No or empty 'frontend' section found in {config_file} !")
     return
+
   settings.InputServerAddress.setText(host)
   settings.InputUsername.setText(user)
+  settings.InputPort.setText(port)
+  settings.SSLCheckBox.setChecked(en_ssl)
   logging.info(f"frontend loaded user {user}, host {host}")
-
 
 
 @Slot()
@@ -89,13 +88,13 @@ def connect_server(settings):
     addr = settings.InputServerAddress.text()
     port = int(settings.InputPort.text())
     username = settings.InputUsername.text()
+    en_ssl = settings.SSLCheckBox.isChecked()
 
-    logging.info(f"stub connecting to server '{addr}:{port}'")
     settings.InputServerAddress.setReadOnly(True)
     settings.InputPort.setReadOnly(True)
     settings.InputUsername.setReadOnly(True)
-    settings.InputPassword.setReadOnly(True)
-    chat_client.init_backend(addr, port, username)
+
+    backend.init_backend(addr, port, username, en_ssl)
     connected = True
 
 
@@ -114,13 +113,13 @@ def disconnect_server(settings):
   if connected == True:
     connected = False
     addr = settings.InputServerAddress.text()
-    print(f"stub disconnecting from server '{addr}'")
+
     settings.InputServerAddress.setReadOnly(False)
     settings.InputPort.setReadOnly(False)
     settings.InputUsername.setReadOnly(False)
-    settings.InputPassword.setReadOnly(False)
+
     logging.info(f"frontend disconnecting from server '{addr}'")
-    client_functions.close_connection(chat_client.my_client.sock)
+    client_functions.close_connection(backend.my_client.sock)
 
 
 def init_settings_window(settings):
@@ -133,9 +132,9 @@ def init_settings_window(settings):
   settings.ButtonDeleteProfile.pressed.connect(lambda: delete_frontend_config(settings))
   settings.ButtonLoadProfile.pressed.connect(lambda: load_frontend_config(settings))
 
-  settings.InputServerAddress.setText(chat_client.host)
-  settings.InputPort.setText(str(chat_client.port))
-  settings.InputUsername.setText(chat_client.user)
+  settings.InputServerAddress.setText(backend.host)
+  settings.InputPort.setText(str(backend.port))
+  settings.InputUsername.setText(backend.user)
 
 
 

@@ -23,7 +23,7 @@ dir = os.path.dirname(__file__)
 os.chdir(dir)
 
 sys.path.append('../client')
-import chat_client
+import backend
 import client_functions
 
 display_thread = None
@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         logging.info("Application closing")
         if settings_functions.connected == True:
-            client_functions.close_connection(chat_client.my_client.sock)
+            client_functions.close_connection(backend.my_client.sock)
         event.accept()
         if display_thread != None:
             display_thread.join()
@@ -54,9 +54,9 @@ def send_msg():
         else:
             logging.info(f"frontend sending message '{t}' to '{r}'")
 
-        user_functions.display_message(mainwindowui, chat_client.user, r, t)
-        client_functions.text_message(chat_client.my_client.sock, t, chat_client.user, r)
-        logging.info(f"frontend calling textmessage with {chat_client.my_client.sock},{t},{chat_client.user}->{r}")
+        user_functions.display_message(mainwindowui, backend.user, r, t)
+        client_functions.text_message(backend.my_client.sock, t, backend.user, r)
+        logging.info(f"frontend calling textmessage with {backend.my_client.sock},{t},{backend.user}->{r}")
         mainwindowui.InputBar.clear()
     else:
         logging.info("User not connected to a server {settings_functions.connected}, skipping")
@@ -74,16 +74,16 @@ def send_image_file():
         recipient = mainwindowui.userSelect.currentText()
         user_functions.display_message(
             mainwindowui,
-            chat_client.user,
+            backend.user,
             recipient,
             "")
 
         user_functions.add_image(mainwindowui, image_file)
         logging.debug("displaying image")
         client_functions.image_message(
-            chat_client.my_client.sock,
+            backend.my_client.sock,
             image_file,
-            chat_client.user,
+            backend.user,
             recipient
         )
         logging.debug("Image sent")
@@ -99,7 +99,7 @@ def start_read_loop():
 
     logging.debug("Starting read loop thread")
     if settings_functions.connected == True and display_thread == None:
-        display_thread = threading.Thread(target=main_read_loop, args=(chat_client.my_client.sock,))
+        display_thread = threading.Thread(target=main_read_loop, args=(backend.my_client.sock,))
         display_thread.start()
 
 @Slot()
@@ -132,7 +132,7 @@ def main_read_loop(sock):
             return
 
         elif message["type"] == "text":
-            if message["author"] != chat_client.user:
+            if message["author"] != backend.user:
               user_functions.display_message(
                   mainwindowui,
                   message['author'],
@@ -144,7 +144,7 @@ def main_read_loop(sock):
             user_functions.set_combo_box(mainwindowui, message["users"])
 
         elif message["type"] == "image":
-            if message["author"] != chat_client.user:
+            if message["author"] != backend.user:
                 user_functions.display_message(
                     mainwindowui,
                     message["author"],

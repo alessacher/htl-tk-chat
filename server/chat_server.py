@@ -19,6 +19,8 @@ import struct
 import signal
 import sys
 
+dir = os.path.dirname(__file__)
+os.chdir(dir)
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
     Handles the request in a thread
@@ -219,9 +221,8 @@ class SSL_TCPServer(socketserver.TCPServer):
             bind_and_activate
             )
 
-        dir = os.path.dirname(__file__)
-        self.__certfile = os.path.join(dir, certfile)
-        self.__keyfile = os.path.join(dir, keyfile)
+        self.__certfile = certfile
+        self.__keyfile = keyfile
 
         self.socket = ssl.wrap_socket(
             self.socket,
@@ -344,9 +345,8 @@ def setup_server(server):
     logging.info("Started Server Thread")
 
 if __name__ == "__main__":
-    dir = os.path.dirname(__file__)
 
-    log_conf = os.path.join(dir, "logger.conf")
+    log_conf = "logger.conf"
     logging.config.fileConfig(log_conf)
     logging.info("Logging Ready")
 
@@ -379,7 +379,7 @@ if __name__ == "__main__":
             config["SSL"]["keyfile"],
             (HOST, PORT+1),
             ThreadedTCPRequestHandler,
-            eval("".join(("ssl.PROTOCOL_",config["SSL"]["ssl_version"])))
+            ssl.PROTOCOL_TLS
             )
 
     else:
