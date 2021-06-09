@@ -1,6 +1,7 @@
 # htl-tk-chat
 Watch the development progress at https://gitea.escpe.net/cc69222/htl-tk-chat
 
+If you are seeing this repo on Github note that this is only a mirror.
 # Build documentation
 To build the documentation run:
 
