@@ -19,7 +19,7 @@ my_client = None
 cconfig = None
 host = "ehw12.ddns.net"
 port = "9999"
-user = "test"
+user = getpass.getuser()
 en_ssl = False
 
 ssl._create_default_https_context = ssl._create_unverified_context

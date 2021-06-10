@@ -37,7 +37,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         and the messages. At the moment it just broadcasts the messages
         """
         logging.info(f"Started new Thread")
-        logging.debug(f"New Thread is {threading.current_thread}")
+        logging.debug(f"New Thread is {threading.current_thread()}")
         logging.info(f"Got new connection from {self.client_address}.")
 
         while True:
@@ -115,28 +115,28 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                                     client["socket"],
                                     connected_users
                                 )
-                            return
-
-                connected_clients.append(
-                    {
-                    "socket" : self.request,
-                    "user"   : message["user"],
-                    "uuid"   : message["uuid"]
-                    }
-                    )
-                self.user = message["user"]
-                connected_users = [x["user"] for x in connected_clients]
-                logging.info(f"created new user {self.user} on socket {self.request}")
-                for client in connected_clients:
-                    text_message(
-                        client["socket"],
-                        f"{message['user']} logged in",
-                        "SERVER"
+                            break
+                else:
+                    connected_clients.append(
+                        {
+                        "socket" : self.request,
+                        "user"   : message["user"],
+                        "uuid"   : message["uuid"]
+                        }
                         )
-                    send_connected_users(
-                        client["socket"],
-                        connected_users
-                    )
+                    self.user = message["user"]
+                    connected_users = [x["user"] for x in connected_clients]
+                    logging.info(f"created new user {self.user} on socket {self.request}")
+                    for client in connected_clients:
+                        text_message(
+                            client["socket"],
+                            f"{message['user']} logged in",
+                            "SERVER"
+                            )
+                        send_connected_users(
+                            client["socket"],
+                            connected_users
+                        )
             
 
             elif message["type"] == "text":
