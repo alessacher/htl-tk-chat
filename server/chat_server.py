@@ -21,10 +21,15 @@ import sys
 
 dir = os.path.dirname(__file__)
 os.chdir(dir)
+
+connected_clients = []
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
     Handles the request in a thread
     """
+
+    global connected_clients
+
     def handle(self):
         """
         function gets a request offer from the socket and prints the
@@ -41,7 +46,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             except ConnectionResetError:
                 logging.error("Connection reset by peer, client disconnected")
                 self.remove_user()
-                for client in self.server.connected_clients:
+                for client in connected_clients:
                     send_connected_users(
                         client["socket"],
                         connected_users
@@ -56,7 +61,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             if message == None:
                 logging.error("Client disconnected forcefully")
                 self.remove_user()
-                for client in self.server.connected_clients:
+                for client in connected_clients:
                     send_connected_users(
                         client["socket"],
                         connected_users
@@ -79,7 +84,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             elif message["type"] == "auth":
                 logging.debug(f"Got auth request from {self.client_address}")
                 logging.info(f"New client with username: {message['user']}")
-                for client in self.server.connected_clients:
+                for client in connected_clients:
                     if client["user"] == message["user"]:
                         if client["uuid"] != message["uuid"]:
                             text_message(
@@ -96,15 +101,15 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                                 "SERVER"
                                 )
                             client["socket"] = self.request
-                            connected_users = [x["user"] for x in self.server.connected_clients]
-                            for client in self.server.connected_clients:
+                            connected_users = [x["user"] for x in connected_clients]
+                            for client in connected_clients:
                                 send_connected_users(
                                     client["socket"],
                                     connected_users
                                 )
                             return
 
-                self.server.connected_clients.append(
+                connected_clients.append(
                     {
                     "socket" : self.request,
                     "user"   : message["user"],
@@ -112,9 +117,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     }
                     )
                 self.user = message["user"]
-                connected_users = [x["user"] for x in self.server.connected_clients]
+                connected_users = [x["user"] for x in connected_clients]
                 logging.info(f"created new user {self.user} on socket {self.request}")
-                for client in self.server.connected_clients:
+                for client in connected_clients:
                     text_message(
                         client["socket"],
                         f"{message['user']} logged in",
@@ -129,7 +134,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             elif message["type"] == "text":
                 logging.debug(f"Got text message request from {self.client_address}")
                 if message["recipient"] == "all":
-                    for client in self.server.connected_clients:
+                    for client in connected_clients:
                         text_message(
                             client["socket"],
                             message["content"],
@@ -138,7 +143,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                             )
                 else:
                     logging.debug(f"""New private message to {message['recipient']}""")
-                    for client in self.server.connected_clients:
+                    for client in connected_clients:
                         if client["user"] == message["recipient"]:
                             text_message(
                                 client["socket"],
@@ -159,7 +164,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             elif message["type"] == "image":
                 logging.debug(f"Got image message request from {self.client_address}")
                 if message["recipient"] == "all":
-                    for client in self.server.connected_clients:
+                    for client in connected_clients:
                         image_message(
                             client["socket"],
                             message["content"],
@@ -168,7 +173,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                             )
                 else:
                     logging.debug(f"New private message to {message['recipient']}")
-                    for client in self.server.connected_clients:
+                    for client in connected_clients:
                         if client["user"] == message["recipient"]:
                             image_message(
                                 client["socket"],
@@ -189,7 +194,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             elif message["type"] == "close":
                 self.remove_user()
                 logging.info(f"Closing connection from {self.client_address}")
-                for client in self.server.connected_clients:
+                for client in connected_clients:
                     send_connected_users(
                         client["socket"],
                         connected_users
@@ -198,9 +203,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
 
     def remove_user(self):
-        for client in self.server.connected_clients:
+        for client in connected_clients:
             if client["user"] == self.user:
-                self.server.connected_clients.remove(client)
+                connected_clients.remove(client)
 
 class SSL_TCPServer(socketserver.TCPServer):
     """A TCP Server with SSL support"""
@@ -236,18 +241,12 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     TCPServer with threading support.
     Spawns a new Thread for every response.
     """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.connected_clients = []
 class SSL_ThreadedTCPServer(socketserver.ThreadingMixIn, SSL_TCPServer):
     """
     SSL_TCPServer with threading support.
     Spawns a new Thread for every response.
     Has SSL support
     """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.connected_clients = []
 
 def unpack_message(message):
     unpacker = msgpack.Unpacker()
