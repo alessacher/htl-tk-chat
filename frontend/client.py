@@ -175,12 +175,10 @@ if __name__ == "__main__":
     settingswindow = QMainWindow()
     settingswindowui = Ui_SettingsWindow()
     settingswindowui.setupUi(settingswindow)
-    mainwindowui.actionServer.triggered.connect(settingswindow.show)
-
-    settingswindowui.ButtonStartConnection.pressed.connect(start_read_loop)
-    settingswindowui.ButtonEndConnection.pressed.connect(stop_read_loop)
-
-    mainwindowui.addFileButton.pressed.connect(send_image_file)
+    mainwindowui.SettingButton.pressed.connect(settingswindow.show)
+    mainwindowui.ConnectButton.pressed.connect(
+        lambda : settings_functions.quickConnect(mainwindowui ,settingswindowui)
+        )
 
     if not os.path.exists("../client/client.conf"):
         settingswindow.show()
@@ -188,5 +186,11 @@ if __name__ == "__main__":
         backend.read_config()
         
     settings_functions.init_settings_window(settingswindowui)
+
+    settingswindowui.ButtonStartConnection.pressed.connect(start_read_loop)
+    settingswindowui.ButtonEndConnection.pressed.connect(stop_read_loop)
+
+    mainwindowui.addFileButton.pressed.connect(send_image_file)
+
 
     sys.exit(app.exec())

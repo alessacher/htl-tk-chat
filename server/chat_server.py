@@ -45,7 +45,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 buffer = recv_msg(self.request)
             except ConnectionResetError:
                 logging.error("Connection reset by peer, client disconnected")
-                self.remove_user()
+                self.remove_user(self.user)
                 for client in connected_clients:
                     send_connected_users(
                         client["socket"],
@@ -60,7 +60,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
             if message == None:
                 logging.error("Client disconnected forcefully")
-                self.remove_user()
+                self.remove_user(self.user)
                 for client in connected_clients:
                     send_connected_users(
                         client["socket"],
@@ -100,7 +100,15 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                                 f"{message['user']} reconnected",
                                 "SERVER"
                                 )
-                            client["socket"] = self.request
+                            self.remove_user(message["user"])
+                            connected_clients.append(
+                                {
+                                "socket" : self.request,
+                                "user"   : message["user"],
+                                "uuid"   : message["uuid"]
+                                }
+                                )
+                            self.user = message["user"]
                             connected_users = [x["user"] for x in connected_clients]
                             for client in connected_clients:
                                 send_connected_users(
@@ -192,7 +200,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                             )
 
             elif message["type"] == "close":
-                self.remove_user()
+                self.remove_user(self.user)
                 logging.info(f"Closing connection from {self.client_address}")
                 for client in connected_clients:
                     send_connected_users(
@@ -202,9 +210,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 return
 
 
-    def remove_user(self):
+    def remove_user(self, user):
         for client in connected_clients:
-            if client["user"] == self.user:
+            if client["user"] == user:
                 connected_clients.remove(client)
 
 class SSL_TCPServer(socketserver.TCPServer):

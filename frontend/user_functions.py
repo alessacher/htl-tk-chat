@@ -1,6 +1,5 @@
 """
-This is just a stub for users since other functionalities
-are not implemented at the moment.
+This file provides functions for the mainwindow to use
 """
 import base64
 import logging
@@ -63,7 +62,9 @@ def add_image(window, image):
 
 def get_image_file():
   file = QFileDialog.getOpenFileName(None,
-    filter = ("Images (*.png *.jpg *.jpeg *.bmp *.tiff *gif);; All Files (*)")
+    filter = (
+      "Images (*.png *.jpg *.jpeg *.bmp *.tiff *gif);; All Files (*)"
+      )
   )
   if not file[0]:
     return None
