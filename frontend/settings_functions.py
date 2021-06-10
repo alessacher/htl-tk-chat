@@ -5,7 +5,7 @@ import logging
 import logging.config
 from PyQt5.QtCore import pyqtSlot as Slot # ui elements communication
 import os.path
-from os import chdir
+import os
 import configparser
 import sys
 
@@ -15,7 +15,7 @@ import backend
 import client_functions
 
 dir = os.path.dirname(__file__)
-chdir(dir)
+os.chdir(dir)
 config_file = "../client/client.conf"
 config = configparser.ConfigParser() # client config file
 config.read(config_file)
@@ -38,6 +38,9 @@ def save_frontend_config(settings):
   config.set("frontend", "user", user)
 
   en_ssl = str(settings.SSLCheckBox.isChecked())
+  if(not config.has_section("SSL")):
+    logging.info(f"No 'SSL' section found in {config_file}, creating one")
+    config.add_section("SSL")
   config.set("SSL", "enable_ssl", en_ssl)
 
   config.write(open(config_file,'w'))
@@ -135,6 +138,7 @@ def init_settings_window(settings):
   settings.InputServerAddress.setText(backend.host)
   settings.InputPort.setText(str(backend.port))
   settings.InputUsername.setText(backend.user)
+  settings.SSLCheckBox.setChecked(backend.en_ssl)
 
 
 

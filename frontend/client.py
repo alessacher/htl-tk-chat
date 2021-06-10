@@ -7,10 +7,11 @@ This is the chat client with Qt5 frontend.
 
 import sys
 import os.path
-from os import chdir
+import os
 import logging
 import logging.config
 import threading
+import configparser
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
 
@@ -175,11 +176,17 @@ if __name__ == "__main__":
     settingswindowui = Ui_SettingsWindow()
     settingswindowui.setupUi(settingswindow)
     mainwindowui.actionServer.triggered.connect(settingswindow.show)
-    settings_functions.init_settings_window(settingswindowui)
 
     settingswindowui.ButtonStartConnection.pressed.connect(start_read_loop)
     settingswindowui.ButtonEndConnection.pressed.connect(stop_read_loop)
 
     mainwindowui.addFileButton.pressed.connect(send_image_file)
+
+    if not os.path.exists("../client/client.conf"):
+        settingswindow.show()
+    else:
+        backend.read_config()
+        
+    settings_functions.init_settings_window(settingswindowui)
 
     sys.exit(app.exec())
