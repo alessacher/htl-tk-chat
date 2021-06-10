@@ -104,7 +104,8 @@ def read_config():
             "port" : 9999,
             "user" : getpass.getuser()
         }
-        cconfig.write(open(config_file,'w'))
+        with open(config_file,'w') as fp:
+            cconfig.write(fp)
 
     try:
         host = cconfig.get("frontend","host")

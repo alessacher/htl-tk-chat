@@ -363,8 +363,13 @@ if __name__ == "__main__":
         }
 
         config["SSL"] = {
-            "enable_ssl" : False
+            "enable_ssl" : False,
+            "keyfile" : "key.pem",
+            "certfile" : "cert.pem"
         }
+
+        with open(config_file, "w") as fp:
+            config.write(fp)
 
     HOST = config["SERVER"]["listen_address"]
     PORT = int(config["SERVER"]["listen_port"])
