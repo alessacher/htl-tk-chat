@@ -60,7 +60,7 @@ def send_msg():
         logging.info(f"frontend calling textmessage with {backend.my_client.sock},{t},{backend.user}->{r}")
         mainwindowui.InputBar.clear()
     else:
-        logging.info("User not connected to a server {settings_functions.connected}, skipping")
+        logging.info(f"User not connected to a server {settings_functions.connected}, skipping")
 
 @Slot()
 def send_image_file():

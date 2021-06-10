@@ -22,7 +22,6 @@
 % VISUAL
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{libertine}
-\usepackage[libertine]{newtxmath}
 \usepackage{inconsolata}
 \usepackage{booktabs}
 \usepackage{lastpage,multicol}
@@ -99,6 +98,17 @@ Speichern Sie Ihre Daten mittels drücken des Buttons \enquote{Save Profile}. Um
 \caption{Der Chat-Client ist nun verbunden, Sie können nun Nachrichten empfangen und versenden \label{fig:alone}}
 \end{figure}
 
+Um Nachrichten zu verfassen, tippen Sie den Text in die Eingabezeile am unteren Rand des Fensters ein und drücken die Enter-Taste.% \LKeyEnter ging nicht ...
 
+\begin{figure}[ht]\centering
+\includegraphics[width=\textwidth]{images/conversation}
+\caption{Nun können Sie im DropDown-Menü in der linken unteren Ecke den Empfänger Ihrer Nachricht auswählen und mit Enter versenden. Empfangene Nachrichten werden Ihnen in der rechten Hälfte des Fensters angezeigt.\label{fig:conversation}}
+\end{figure}
+
+
+\begin{figure}[ht]\centering
+\includegraphics[width=\textwidth]{images/attach-image}
+\caption{Sie können durch drücken des \texttt{attatch}-Buttons in der rechten unteren Ecke des Fensters eine Bilddatei anhängen, es öffnet sich ein FileChooser-Dialog des Betriebssystems und Sie können dort zu dem Bild Ihrer Wahl navigieren. Haben Sie das Bild ausgewählt wird es an den gewählten Empfänger versendet.\label{fig:attach-image}}
+\end{figure}
 
 \end{document}
