@@ -120,7 +120,7 @@ def read_config():
 
 
 def init_backend(ip = host, port = port, username = user, en_ssl = en_ssl):
-    global shutdown, user, my_client
+    global user, my_client
 
     user = username
     if not en_ssl:
@@ -129,7 +129,7 @@ def init_backend(ip = host, port = port, username = user, en_ssl = en_ssl):
         my_client = SSL_Client(
             ip,
             port,
-            ssl.PROTOCOL_TLS
+            ssl.PROTOCOL_TLSv1_2
         )
     my_client.connect(ip, port)
     print(f"authenticating on {my_client.sock} as {user}")

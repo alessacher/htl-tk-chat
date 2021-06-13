@@ -12,6 +12,13 @@ import uuid
 import socket
 import base64
 import struct
+import logging
+
+too_large_message = msgpack.packb(
+    {
+    "type" : "toolarge"
+    }
+)
 
 def authenticate(sock, username : str):
     """Authentication function
@@ -80,14 +87,20 @@ def get_message(sock):
 
     Takes a socket argument and returns the message in the pipe.
     """
-    unpacker = msgpack.Unpacker()
+
     buffer = recv_msg(sock)
     if buffer == None:
         return None
-    unpacker.feed(buffer)
-    for object in unpacker:
-        return object
+    message = unpack_message(buffer)
+    if message:
+        return message
+    else:
+        return None
 
+def unpack_message(message):
+    """helper function to unpack a message"""
+    object = msgpack.unpackb(message)
+    return object
 
 def close_connection(sock):
     """Close function
@@ -102,12 +115,17 @@ def close_connection(sock):
     send_encoded(sock, message)
 
 def recv_msg(sock):
-    """Receive a whole message"""
+    """helper function to receive a whole message"""
     bmessage_length = recvall(sock, 4)
     if not bmessage_length:
         return None
     
     message_length = struct.unpack('>I', bmessage_length)[0]
+
+    if message_length > 2**17:
+        logging.warning("Not receiving messages above 128MiB")
+        return too_large_message
+    logging.debug(f"receiving message of size {message_length} bytes")
 
     return recvall(sock, message_length)
 
@@ -119,12 +137,12 @@ def recvall(sock, msglen):
         if not buffer:
             return None
         data.extend(buffer)
+        logging.debug(f"extend data about {len(buffer)} bytes. data now at {len(data)} bytes")
     return data
 
 def send_encoded(sock, message):
     """Helper function to send encoded the message"""
-    packer = msgpack.Packer()
-    message = packer.pack(message)
+    message = msgpack.packb(message)
     message_length = len(message)
     message = struct.pack('>I', message_length) + message
     sock.sendall(message)
@@ -133,7 +151,8 @@ def check_ssl(sock):
     """Check if the server supports ssl"""
 
     message = {
-        "type" : "sslcheck"
+        "type" : "sslcheck",
+        "time" : time.time()
     }
 
     send_encoded(sock, message)
@@ -145,10 +164,49 @@ def get_ssl_cert(sock):
     """Check if the server supports ssl"""
 
     message = {
-        "type" : "sslcert"
+        "type" : "sslcert",
+        "time" : time.time()
     }
 
     send_encoded(sock, message)
 
     response = get_message(sock)
+    return response
+
+def file_message(sock,
+    filename : str,
+    file_data : bytes,
+    fileid : str,
+    author : str,
+    recipient : str = "all"):
+
+    """Sends File to server"""
+
+    message = {
+        "type" : "file",
+        "content" : filename,
+        "filename" : filename,
+        "file" : file_data,
+        "fileid" : fileid,
+        "author" : author,
+        "recipient" : recipient, 
+        "time" : time.time()
+    }
+
+    send_encoded(sock, message)
+
+def get_file(sock, fileid : str):
+    """gets a file from the server"""
+
+    message = {
+        "type" : "getfile",
+        "fileid" : fileid,
+        "time" : time.time()
+    }
+
+    print("getting file")
+    send_encoded(sock, message)
+    print("file request sent")
+    response = get_message(sock)
+    print("got file")
     return response

@@ -11,7 +11,7 @@ import os
 import logging
 import logging.config
 import threading
-import configparser
+import time
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
 
@@ -28,6 +28,7 @@ import backend
 import client_functions
 
 display_thread = None
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -47,7 +48,7 @@ def send_msg():
 
     This function is called when the user presses Enter,
     to send the message."""
-    if settings_functions.connected == True:
+    if settings_functions.connected:
         r = mainwindowui.userSelect.currentText()
         t = mainwindowui.InputBar.text()
         if r == "all":
@@ -63,11 +64,48 @@ def send_msg():
         logging.info(f"User not connected to a server {settings_functions.connected}, skipping")
 
 @Slot()
-def send_image_file():
-    if settings_functions.connected == True:
-        logging.debug("Sending new image")
+def send_file():
+    if settings_functions.connected:
+        logging.debug("Sending new File")
+        filename = user_functions.get_file()
 
-        image_file = user_functions.get_image_file()
+        if filename.endswith(("png", "jpg", "jpeg", "bmp", "tiff", "gif")):
+            send_image_file(filename)
+        
+        else:
+            with open(filename, "rb") as fp:
+                file_data = fp.read()
+
+            logging.debug("read file into memory")
+
+            filename = os.path.basename(filename)
+            fileid = "-".join((filename, str(time.time())))
+
+            recipient = mainwindowui.userSelect.currentText()
+            user_functions.display_file(
+                mainwindowui,
+                backend.user,
+                recipient,
+                os.path.basename(filename),
+                fileid
+            )
+
+            logging.debug("displaying file")
+
+            client_functions.file_message(
+                backend.my_client.sock,
+                filename,
+                file_data,
+                fileid,
+                backend.user,
+                recipient
+            )
+
+            logging.debug("file sent")
+
+def send_image_file(image_file):
+    if settings_functions.connected:
+        logging.debug("Sending new image")
 
         if image_file is None:
             logging.error("File not found, not sending image")
@@ -91,6 +129,40 @@ def send_image_file():
     else:
         logging.info("User not connected to a server, skipping")
 
+@Slot()
+def get_file_from_server(listwidgetitem):
+    text = listwidgetitem.data()
+
+    if not text:
+        return
+
+    elif "file:" in text and "FileID:" in text:
+        logging.debug("Try to get file from server")
+        startindex = text.find("FileID: ")
+        fileid = text[startindex+8:]
+
+        file_data = client_functions.get_file(
+            backend.my_client.sock,
+            fileid
+        )
+
+        if file_data == "ERROR":
+            logging.error("File not found")
+            return
+
+        elif file_data:
+            logging.debug("Got file from server")
+
+            save_file = user_functions.get_save_file()
+
+            if save_file:
+                with open(save_file, "wb") as fp:
+                    fp.write(file_data)
+
+            logging.info("File saved")
+        
+        else:
+            logging.error("File is None")
 
 @Slot()
 def start_read_loop():
@@ -100,7 +172,9 @@ def start_read_loop():
 
     logging.debug("Starting read loop thread")
     if settings_functions.connected == True and display_thread == None:
-        display_thread = threading.Thread(target=main_read_loop, args=(backend.my_client.sock,))
+        display_thread = threading.Thread(
+            target=main_read_loop,
+            args=(backend.my_client.sock,))
         display_thread.start()
 
 @Slot()
@@ -152,6 +226,15 @@ def main_read_loop(sock):
                     message["recipient"],
                     "")
                 user_functions.add_image(mainwindowui, message["content"])
+        
+        elif message["type"] == "filetext":
+            if message["author"] != backend.user:
+              user_functions.display_file(
+                  mainwindowui,
+                  message['author'],
+                  message['recipient'],
+                  message['content'],
+                  message['fileid'])
 
 
 
@@ -190,7 +273,8 @@ if __name__ == "__main__":
     settingswindowui.ButtonStartConnection.pressed.connect(start_read_loop)
     settingswindowui.ButtonEndConnection.pressed.connect(stop_read_loop)
 
-    mainwindowui.addFileButton.pressed.connect(send_image_file)
+    mainwindowui.addFileButton.pressed.connect(send_file)
+    mainwindowui.msgList.pressed.connect(get_file_from_server)
 
 
     sys.exit(app.exec())

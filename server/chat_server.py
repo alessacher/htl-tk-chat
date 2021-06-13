@@ -19,10 +19,11 @@ import struct
 import signal
 import sys
 
-dir = os.path.dirname(__file__)
-os.chdir(dir)
+filedir = os.path.dirname(__file__)
+os.chdir(filedir)
 
 connected_clients = []
+save_files = []
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """
     Handles the request in a thread
@@ -42,8 +43,14 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
         self.message_function = {
             "text" : text_message,
-            "image" : image_message
+            "image" : image_message,
+            "file" : filetext_message
         }
+
+        if sys.platform == "linux":
+            self.tmpdir = "/tmp/"
+        else:
+            self.tmpdir = filedir
 
         while True:
             try:
@@ -92,6 +99,48 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     self.broadcast_message(message)
                 else:
                     self.private_message(message)
+            
+            elif message["type"] == "file":
+                logging.debug(f"Got new file : {message['filename']}")
+
+                save_file = os.path.join(
+                    self.tmpdir,
+                    message["fileid"]
+                )
+
+                with open(save_file, "wb") as fp:
+                    fp.write(message["file"])
+                
+                save_files.append(
+                    {
+                        "savefile" : save_file,
+                        "fileid" : message["fileid"]
+                    }
+                )
+
+                if message["recipient"] == "all":
+                    self.broadcast_message(message)
+                else:
+                    self.private_message(message)
+            
+            elif message["type"] == "getfile":
+                logging.info("Got a download request for a file")
+                for file in save_files:
+                    if file["fileid"] == message["fileid"]:
+                        requested_file = file["savefile"]
+                        logging.debug("Found requested file")
+                        break
+
+                else:
+                    logging.warning(f"file with id \"{message['fileid']}\" unavailable")
+                    send_encoded(self.request, "ERROR")
+
+                with open(requested_file, "rb") as fp:
+                    file_data = fp.read()
+                logging.debug("loaded file into memory")
+
+                send_encoded(self.request, file_data)
+                logging.debug("file sent")
 
             elif message["type"] == "close":
                 self.remove_user(self.user)
@@ -156,36 +205,67 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def broadcast_message(self, message):
         """helper function to send message to all connected users"""
 
-        for client in connected_clients:
-            self.message_function[message["type"]](
-                client["socket"],
-                message["content"],
-                message["author"],
-                message["recipient"]
-                )
-
-    def private_message(self, message):
-        """helper function to send a private message"""
-
-        logging.debug(f"New private message to {message['recipient']}")
-        for client in connected_clients:
-            if client["user"] == message["recipient"]:
+        if message["type"] != "file":
+            for client in connected_clients:
                 self.message_function[message["type"]](
                     client["socket"],
                     message["content"],
                     message["author"],
                     message["recipient"]
-                )
-                break
+                    )
+        else:
+            for client in connected_clients:
+                self.message_function[message["type"]](
+                    client["socket"],
+                    message["content"],
+                    message["author"],
+                    message["fileid"],
+                    message["recipient"]
+                    )
+
+    def private_message(self, message):
+        """helper function to send a private message"""
+
+        logging.debug(f"New private message to {message['recipient']}")
+        
+        if message["type"] != "file":
+            for client in connected_clients:
+                if client["user"] == message["recipient"]:
+                    self.message_function[message["type"]](
+                        client["socket"],
+                        message["content"],
+                        message["author"],
+                        message["recipient"]
+                    )
+                    break
+            
+            else:
+                self.user_unavailable(message)
         
         else:
-            logging.warning(f"{message['recipient']} unavailable")
-            text_message(
-                self.request,
-                "Private Message was not delivered. Reason: user unavailable",
-                "SERVER",
-                self.user
-            )
+            for client in connected_clients:
+                if client["user"] == message["recipient"]:
+                    self.message_function[message["type"]](
+                        client["socket"],
+                        message["content"],
+                        message["author"],
+                        message["fileid"],
+                        message["recipient"]
+                    )
+                    break
+            
+            else:
+                self.user_unavailable(message)
+
+    def user_unavailable(self, message):
+        logging.warning(f"{message['recipient']} unavailable")
+        text_message(
+            self.request,
+            "Private Message was not delivered. Reason: user unavailable",
+            "SERVER",
+            self.user
+        )
+
 
 class SSL_TCPServer(socketserver.TCPServer):
     """A TCP Server with SSL support"""
@@ -229,10 +309,8 @@ class SSL_ThreadedTCPServer(socketserver.ThreadingMixIn, SSL_TCPServer):
     """
 
 def unpack_message(message):
-    unpacker = msgpack.Unpacker()
-    unpacker.feed(message)
-    for object in unpacker:
-        return object
+    object = msgpack.unpackb(message)
+    return object
 
 def text_message(sock, text : str, author : str, recipient : str = "all"):
     """Text Message function
@@ -248,7 +326,27 @@ def text_message(sock, text : str, author : str, recipient : str = "all"):
         "time" : time.time()
     }
     send_encoded(sock, message)
-    logging.debug(f"Send message '{text}' to client : {sock.getpeername()}")
+
+def filetext_message(sock,
+    text : str,
+    author : str,
+    fileid : str,
+    recipient : str = "all"):
+    """File Text Message function
+
+    Takes a socket, text, author and recipient as arguments and
+    sends it to the client. To inform the client that there is a
+    new file.
+    """
+    message = {
+        "type" : "filetext",
+        "content" : text,
+        "fileid" : fileid,
+        "author" : author,
+        "recipient" : recipient,
+        "time" : time.time()
+    }
+    send_encoded(sock, message)
 
 def update_users():
     """Function updates the connected users and sends them"""
@@ -316,8 +414,7 @@ def recvall(sock, msglen):
 
 def send_encoded(sock, message):
     """Helper function to send encoded the message"""
-    packer = msgpack.Packer()
-    message = packer.pack(message)
+    message = msgpack.packb(message)
     message_length = len(message)
     message = struct.pack('>I', message_length) + message
     sock.sendall(message)
@@ -338,7 +435,7 @@ if __name__ == "__main__":
     logging.config.fileConfig(log_conf)
     logging.info("Logging Ready")
 
-    config_file = os.path.join(dir, "server.conf")
+    config_file = "server.conf"
     config = configparser.ConfigParser()
 
     if os.path.exists(config_file):
@@ -372,7 +469,7 @@ if __name__ == "__main__":
             config["SSL"]["keyfile"],
             (HOST, PORT+1),
             ThreadedTCPRequestHandler,
-            ssl.PROTOCOL_TLS
+            ssl.PROTOCOL_TLS_SERVER
             )
 
     else:
