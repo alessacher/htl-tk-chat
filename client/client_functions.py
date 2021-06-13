@@ -204,9 +204,4 @@ def get_file(sock, fileid : str):
         "time" : time.time()
     }
 
-    print("getting file")
     send_encoded(sock, message)
-    print("file request sent")
-    response = get_message(sock)
-    print("got file")
-    return response

@@ -12,8 +12,8 @@ import logging
 import logging.config
 import threading
 import time
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
-from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QObject
 
 import user_functions
 import settings_functions
@@ -29,6 +29,11 @@ import client_functions
 
 display_thread = None
 
+class SaveFile(QObject):
+    file_to_save = Signal(bytes)
+
+    def connect(self):
+        self.file_to_save.connect(save_file)
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -141,28 +146,30 @@ def get_file_from_server(listwidgetitem):
         startindex = text.find("FileID: ")
         fileid = text[startindex+8:]
 
-        file_data = client_functions.get_file(
+        client_functions.get_file(
             backend.my_client.sock,
             fileid
         )
 
-        if file_data == "ERROR":
-            logging.error("File not found")
-            return
+@Slot(bytes)
+def save_file(file_data):
+    if file_data == "ERROR":
+        logging.error("File not found")
+        return
 
-        elif file_data:
-            logging.debug("Got file from server")
+    elif file_data:
+        logging.debug("Got file from server")
 
-            save_file = user_functions.get_save_file()
+        save_file = user_functions.get_save_file()
 
-            if save_file:
-                with open(save_file, "wb") as fp:
-                    fp.write(file_data)
+        if save_file:
+            with open(save_file, "wb") as fp:
+                fp.write(file_data)
 
-            logging.info("File saved")
-        
-        else:
-            logging.error("File is None")
+        logging.info("File saved")
+            
+    else:
+        logging.error("File is None")
 
 @Slot()
 def start_read_loop():
@@ -193,6 +200,9 @@ def stop_read_loop():
 
 def main_read_loop(sock):
     """Reads the socket in a loop"""
+
+    global filesaver
+
     logging.debug("read loop started")
     while settings_functions.connected:
         message = client_functions.get_message(sock)
@@ -208,11 +218,11 @@ def main_read_loop(sock):
 
         elif message["type"] == "text":
             if message["author"] != backend.user:
-              user_functions.display_message(
-                  mainwindowui,
-                  message['author'],
-                  message['recipient'],
-                  message['content'])
+                user_functions.display_message(
+                    mainwindowui,
+                    message['author'],
+                    message['recipient'],
+                    message['content'])
 
         elif message["type"] == "users":
             user_functions.set_user_table(mainwindowui, message["users"])
@@ -235,7 +245,9 @@ def main_read_loop(sock):
                   message['recipient'],
                   message['content'],
                   message['fileid'])
-
+        
+        elif message["type"] == "file":
+            filesaver.file_to_save.emit(message["content"])
 
 
     logging.debug("read loop stopped")
@@ -276,5 +288,7 @@ if __name__ == "__main__":
     mainwindowui.addFileButton.pressed.connect(send_file)
     mainwindowui.msgList.pressed.connect(get_file_from_server)
 
+    filesaver = SaveFile()
+    filesaver.connect()
 
     sys.exit(app.exec())

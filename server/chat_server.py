@@ -139,8 +139,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     file_data = fp.read()
                 logging.debug("loaded file into memory")
 
-                send_encoded(self.request, file_data)
-                logging.debug("file sent")
+                file_message(self.request, file_data)
 
             elif message["type"] == "close":
                 self.remove_user(self.user)
@@ -379,7 +378,7 @@ def image_message(
     """Image Message function
 
     Takes a socket, image, author and recipient as arguments and
-    sends it to the server. The image will be base64 encoded.
+    sends it to the client. The image will be base64 encoded.
     """
 
     message = {
@@ -390,7 +389,24 @@ def image_message(
         "time" : time.time()
     }
     send_encoded(sock, message)
-    logging.debug(f"Send image to client : {sock.getpeername()}")
+    logging.debug(f"Sent image to client : {sock.getpeername()}")
+
+def file_message(
+    sock,
+    file):
+    """File Message function
+
+    Takes a socket and file content as arguments and
+    sends it to the client.
+    """
+
+    message = {
+        "type" : "file",
+        "content" : file,
+        "time" : time.time()
+    }
+    send_encoded(sock, message)
+    logging.debug(f"Sent file to client : {sock.getpeername()}")
 
 def recv_msg(sock):
     bmessage_length = recvall(sock, 4)
