@@ -40,32 +40,31 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         logging.debug(f"New Thread is {threading.current_thread()}")
         logging.info(f"Got new connection from {self.client_address}.")
 
+        self.message_function = {
+            "text" : text_message,
+            "image" : image_message
+        }
+
         while True:
             try:
                 buffer = recv_msg(self.request)
+            
             except ConnectionResetError:
                 logging.error("Connection reset by peer, client disconnected")
                 self.remove_user(self.user)
-                for client in connected_clients:
-                    send_connected_users(
-                        client["socket"],
-                        connected_users
-                    )
+                update_users()
                 return
+            
             message = unpack_message(buffer)
 
             if type(message) == int:
-                logging.error("fGot Integer from socket : {message}")
+                logging.error(f"Got Integer from socket : {message}")
                 continue
 
             if message == None:
                 logging.error("Client disconnected forcefully")
                 self.remove_user(self.user)
-                for client in connected_clients:
-                    send_connected_users(
-                        client["socket"],
-                        connected_users
-                    )
+                update_users()
                 return
 
             if message["type"] == "sslcheck":
@@ -78,135 +77,26 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
                 with open(certfile, "rb") as cert:
                     cert_buffer = cert.read()
-                
                 send_encoded(self.request, cert_buffer)
 
             elif message["type"] == "auth":
-                logging.debug(f"Got auth request from {self.client_address}")
-                logging.info(f"New client with username: {message['user']}")
-                for client in connected_clients:
-                    if client["user"] == message["user"]:
-                        if client["uuid"] != message["uuid"]:
-                            text_message(
-                                self.request,
-                                f"Username : {message['user']} already taken",
-                                "SERVER"
-                                )
-                            self.request.close()
-                            return
-                        else:
-                            text_message(
-                                self.request,
-                                f"{message['user']} reconnected",
-                                "SERVER"
-                                )
-                            self.remove_user(message["user"])
-                            connected_clients.append(
-                                {
-                                "socket" : self.request,
-                                "user"   : message["user"],
-                                "uuid"   : message["uuid"]
-                                }
-                                )
-                            self.user = message["user"]
-                            connected_users = [x["user"] for x in connected_clients]
-                            for client in connected_clients:
-                                send_connected_users(
-                                    client["socket"],
-                                    connected_users
-                                )
-                            break
-                else:
-                    connected_clients.append(
-                        {
-                        "socket" : self.request,
-                        "user"   : message["user"],
-                        "uuid"   : message["uuid"]
-                        }
-                        )
-                    self.user = message["user"]
-                    connected_users = [x["user"] for x in connected_clients]
-                    logging.info(f"created new user {self.user} on socket {self.request}")
-                    for client in connected_clients:
-                        text_message(
-                            client["socket"],
-                            f"{message['user']} logged in",
-                            "SERVER"
-                            )
-                        send_connected_users(
-                            client["socket"],
-                            connected_users
-                        )
-            
+                self.auth(message)
 
-            elif message["type"] == "text":
-                logging.debug(f"Got text message request from {self.client_address}")
-                if message["recipient"] == "all":
-                    for client in connected_clients:
-                        text_message(
-                            client["socket"],
-                            message["content"],
-                            message["author"],
-                            message["recipient"]
-                            )
+            elif message["type"] == "text" or message["type"] == "image":
+                if message["type"] == "text":
+                    logging.debug(f"Got text message request from {self.client_address}")
                 else:
-                    logging.debug(f"""New private message to {message['recipient']}""")
-                    for client in connected_clients:
-                        if client["user"] == message["recipient"]:
-                            text_message(
-                                client["socket"],
-                                message["content"],
-                                message["author"],
-                                message["recipient"]
-                                )
-                            break
-                    else:
-                        logging.warning(f"{message['recipient']} unavailable")
-                        text_message(
-                            self.request,
-                            "Private Message was not delivered. Reason: user unavailable",
-                            "SERVER",
-                            self.user
-                            )
-            
-            elif message["type"] == "image":
-                logging.debug(f"Got image message request from {self.client_address}")
+                    logging.debug(f"Got image message request from {self.client_address}")
+
                 if message["recipient"] == "all":
-                    for client in connected_clients:
-                        image_message(
-                            client["socket"],
-                            message["content"],
-                            message["author"],
-                            message["recipient"]
-                            )
+                    self.broadcast_message(message)
                 else:
-                    logging.debug(f"New private message to {message['recipient']}")
-                    for client in connected_clients:
-                        if client["user"] == message["recipient"]:
-                            image_message(
-                                client["socket"],
-                                message["content"],
-                                message["author"],
-                                message["recipient"]
-                                )
-                            break
-                    else:
-                        logging.warning(f"{message['recipient']} unavailable")
-                        text_message(
-                            self.request,
-                            "Private Message was not delivered. Reason: user unavailable",
-                            "SERVER",
-                            self.user
-                            )
+                    self.private_message(message)
 
             elif message["type"] == "close":
                 self.remove_user(self.user)
                 logging.info(f"Closing connection from {self.client_address}")
-                for client in connected_clients:
-                    send_connected_users(
-                        client["socket"],
-                        connected_users
-                    )
+                update_users()
                 return
 
 
@@ -214,6 +104,88 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         for client in connected_clients:
             if client["user"] == user:
                 connected_clients.remove(client)
+
+    def add_user(self, message):
+        connected_clients.append(
+            {
+                "socket" : self.request,
+                "user"   : message["user"],
+                "uuid"   : message["uuid"]
+            }
+        )
+        self.user = message["user"]
+    
+    def auth(self, message):
+        logging.debug(f"Got auth request from {self.client_address}")
+        logging.info(f"New client with username: {message['user']}")
+
+        for client in connected_clients:
+            if client["user"] == message["user"]:
+                if client["uuid"] != message["uuid"]:
+                    text_message(
+                        self.request,
+                        f"Username : {message['user']} already taken",
+                        "SERVER"
+                    )
+                    self.request.close()
+                    return
+
+                else:
+                    text_message(
+                        self.request,
+                        f"{message['user']} reconnected",
+                        "SERVER"
+                    )
+
+                    self.remove_user(message["user"])
+                    self.add_user(message)
+                    update_users()                    
+                    break
+
+        else:
+            self.add_user(message)
+            logging.info(f"created new user {self.user} on socket {self.request}")
+            update_users()
+            for client in connected_clients:
+                text_message(
+                    client["socket"],
+                    f"{message['user']} logged in",
+                    "SERVER"
+                )
+    
+    def broadcast_message(self, message):
+        """helper function to send message to all connected users"""
+
+        for client in connected_clients:
+            self.message_function[message["type"]](
+                client["socket"],
+                message["content"],
+                message["author"],
+                message["recipient"]
+                )
+
+    def private_message(self, message):
+        """helper function to send a private message"""
+
+        logging.debug(f"New private message to {message['recipient']}")
+        for client in connected_clients:
+            if client["user"] == message["recipient"]:
+                self.message_function[message["type"]](
+                    client["socket"],
+                    message["content"],
+                    message["author"],
+                    message["recipient"]
+                )
+                break
+        
+        else:
+            logging.warning(f"{message['recipient']} unavailable")
+            text_message(
+                self.request,
+                "Private Message was not delivered. Reason: user unavailable",
+                "SERVER",
+                self.user
+            )
 
 class SSL_TCPServer(socketserver.TCPServer):
     """A TCP Server with SSL support"""
@@ -278,8 +250,17 @@ def text_message(sock, text : str, author : str, recipient : str = "all"):
     send_encoded(sock, message)
     logging.debug(f"Send message '{text}' to client : {sock.getpeername()}")
 
+def update_users():
+    """Function updates the connected users and sends them"""
+    connected_users = [x["user"] for x in connected_clients]
+    for client in connected_clients:
+        send_connected_users(
+            client["socket"],
+            connected_users
+        )
+
 def send_connected_users(sock, usernames):
-    """Text Message function
+    """helper function to send the connected users
 
     Takes a socket and a iterable usernames as arguments and
     sends it to the client.
