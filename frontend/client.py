@@ -135,21 +135,24 @@ def send_image_file(image_file):
         logging.info("User not connected to a server, skipping")
 
 @Slot()
-def get_file_from_server(listwidgetitem):
-    text = listwidgetitem.data()
+def get_file_from_server(ModelIndex):
+    """Function to send a file get file request from the server
 
-    if not text:
+    You never call this function directly. It is a Slot and gets 
+    a QModelIndex Object from the Signal calling it. The functions
+    then reads the StatusTip Field of the QObject the Model refers to.
+    It just assumes the StatusTip is the fileid because non file
+    messages have no StatusTip set, which returns non.
+    """
+    fileid = ModelIndex.data(4)
+
+    if not fileid:
         return
 
-    elif "file:" in text and "FileID:" in text:
-        logging.debug("Try to get file from server")
-        startindex = text.find("FileID: ")
-        fileid = text[startindex+8:]
-
-        client_functions.get_file(
-            backend.my_client.sock,
-            fileid
-        )
+    client_functions.get_file(
+        backend.my_client.sock,
+        fileid
+    )
 
 @Slot(bytes)
 def save_file(file_data):

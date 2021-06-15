@@ -64,6 +64,7 @@ class SSL_Client:
             sock.connect((ip, port))
 
             ssl_status = client_functions.check_ssl(sock)
+            client_functions.close_connection(sock)
             
         if ssl_status:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
