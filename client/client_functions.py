@@ -116,7 +116,7 @@ def close_connection(sock):
 
 def recv_msg(sock):
     """helper function to receive a whole message"""
-    bmessage_length = recvall(sock, 4)
+    bmessage_length = recv_all(sock, 4)
     if not bmessage_length:
         return None
     
@@ -127,9 +127,9 @@ def recv_msg(sock):
         return too_large_message
     logging.debug(f"receiving message of size {message_length} bytes")
 
-    return recvall(sock, message_length)
+    return recv_all(sock, message_length)
 
-def recvall(sock, msglen):
+def recv_all(sock, msglen):
     """helper function which receives all up to msglen"""
     data = bytearray()
     while len(data) < msglen:

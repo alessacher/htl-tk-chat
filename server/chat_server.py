@@ -409,16 +409,16 @@ def file_message(
     logging.debug(f"Sent file to client : {sock.getpeername()}")
 
 def recv_msg(sock):
-    bmessage_length = recvall(sock, 4)
+    bmessage_length = recv_all(sock, 4)
     if not bmessage_length:
         return None
     
     message_length = struct.unpack('>I', bmessage_length)[0]
     logging.debug(f"receiving message of size {message_length} bytes")
 
-    return recvall(sock, message_length)
+    return recv_all(sock, message_length)
 
-def recvall(sock, msglen):
+def recv_all(sock, msglen):
     data = bytearray()
     while len(data) < msglen:
         buffer = sock.recv(msglen - len(data))
