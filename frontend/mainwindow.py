@@ -114,7 +114,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Chat"))
         self.InputBar.setToolTip(_translate("MainWindow", "Enter Text here to send"))
         self.InputBar.setPlaceholderText(_translate("MainWindow", "Enter message to send"))
         self.addFileButton.setText(_translate("MainWindow", "attach"))

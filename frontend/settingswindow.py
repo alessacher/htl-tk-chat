@@ -14,10 +14,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_SettingsWindow(object):
     def setupUi(self, SettingsWindow):
         SettingsWindow.setObjectName("SettingsWindow")
-        SettingsWindow.resize(554, 226)
+        SettingsWindow.resize(554, 218)
         font = QtGui.QFont()
         font.setPointSize(12)
         SettingsWindow.setFont(font)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("ui_files/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        SettingsWindow.setWindowIcon(icon)
         self.centralWidget = QtWidgets.QWidget(SettingsWindow)
         self.centralWidget.setObjectName("centralWidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralWidget)
