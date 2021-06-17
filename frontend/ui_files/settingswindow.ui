@@ -6,12 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>700</width>
-    <height>350</height>
+    <width>554</width>
+    <height>218</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>12</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>icon.png</normaloff>icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -60,64 +69,28 @@
         <height>20</height>
        </size>
       </property>
-      <widget class="QWidget" name="TabInformation">
+      <widget class="QWidget" name="ServerTab">
        <attribute name="title">
-        <string>Information</string>
+        <string>Server</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="1" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QCheckBox" name="checkBox_2">
-            <property name="text">
-             <string>CheckBox</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
         <item row="5" column="0">
          <layout class="QHBoxLayout" name="AuthLayout">
           <item>
-           <widget class="QLabel" name="ConncetionLabel">
-            <property name="text">
-             <string>Connect to server</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QLineEdit" name="InputServerAddress">
             <property name="toolTip">
-             <string>IP-Address of the server in dotted decimal, Port is optional</string>
-            </property>
-            <property name="statusTip">
-             <string/>
-            </property>
-            <property name="whatsThis">
-             <string/>
-            </property>
-            <property name="inputMask">
-             <string/>
-            </property>
-            <property name="text">
-             <string>127.0.0.1</string>
+             <string>Hostname of the server</string>
             </property>
             <property name="readOnly">
              <bool>false</bool>
             </property>
             <property name="placeholderText">
-             <string>ip:port</string>
+             <string>Hostname</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QLineEdit" name="InputPort">
-            <property name="text">
-             <string>9999</string>
-            </property>
             <property name="placeholderText">
              <string>Port</string>
             </property>
@@ -128,27 +101,29 @@
             <property name="toolTip">
              <string>Your Username to connect to the chat-server</string>
             </property>
-            <property name="text">
-             <string>test</string>
-            </property>
             <property name="placeholderText">
              <string>Username</string>
             </property>
            </widget>
           </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLineEdit" name="InputPassword">
-            <property name="toolTip">
-             <string>Your Password for your User</string>
-            </property>
-            <property name="echoMode">
-             <enum>QLineEdit::Password</enum>
-            </property>
-            <property name="placeholderText">
-             <string>Password</string>
+           <widget class="QCheckBox" name="SSLCheckBox">
+            <property name="text">
+             <string>Use SSL</string>
             </property>
            </widget>
           </item>
+         </layout>
+        </item>
+        <item row="6" column="0">
+         <layout class="QHBoxLayout" name="ConnectionButtons">
+          <property name="topMargin">
+           <number>0</number>
+          </property>
           <item>
            <widget class="QPushButton" name="ButtonStartConnection">
             <property name="cursor">
@@ -174,51 +149,12 @@
           </item>
          </layout>
         </item>
-        <item row="0" column="0">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="TabSettings">
-       <attribute name="title">
-        <string>Settings</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0">
-         <widget class="QToolBox" name="SettingsTabBar"/>
-        </item>
        </layout>
       </widget>
      </widget>
     </item>
    </layout>
   </widget>
-  <action name="ActionSaveProfile">
-   <property name="text">
-    <string>Save Profile</string>
-   </property>
-   <property name="toolTip">
-    <string>Save Profile</string>
-   </property>
-  </action>
-  <action name="ActionSaveProfileAs">
-   <property name="text">
-    <string>Save Profile As...</string>
-   </property>
-   <property name="toolTip">
-    <string>Save Profile with custom name</string>
-   </property>
-  </action>
  </widget>
  <resources/>
  <connections/>

@@ -6,5 +6,5 @@ all : doc
 
 doc: .doxygen
 	cd documentation/latex && ${MAKE} all
-	cp documentation/latex/refman.pdf documentation.pdf
+	cp documentation/latex/refman.pdf doc/documentation.pdf
 	rm -rf documentation

@@ -19,13 +19,12 @@
 \newcommand{\iindex}[1]{#1\index{#1}}
 
 % LAYOUT
-\usepackage[activate=true,final,spacing=true,expansion=true]{microtype}
+\usepackage[activate=true,final,expansion=true]{microtype}
 
 % VISUAL
 \usepackage{amsmath,amssymb,amsfonts}
+%\usepackage{MinionPro}
 \usepackage{libertine}
-\usepackage[libertine]{newtxmath}
-\usepackage{beramono}
 \usepackage{booktabs}
 \usepackage{lastpage,multicol}
 \usepackage{subcaption,setspace,enumerate}
@@ -57,7 +56,7 @@
 \addbibresource{/home/ln/Dokumente/tex/literatur/main.bib}
 
 \usepackage{hyperref}
-\usepackage{marvosym}
+
 \hypersetup
 {%
   pdfauthor={Graber, Preindl, Lessacher},%
@@ -76,24 +75,43 @@
 
 \maketitle
 \section*{Projekt}
-Unser Projekt ist ein Chat Programm mit Client und Server. Beides in Python geschrieben und der Client mit Qt6 frontend.
+Unser Projekt ist ein Chat Programm mit Client und Server. Beides wurde in Python geschrieben, der Client greift auf das GUI-fontend Qt5 zurück.% Weitere nennenswerte Komponenten sind msgpack zur Serialitierung der Nachrichten für den Versand sowie ...
 
 \section*{Kurzbeschreibung}
-Das Chat Programm soll es möglich machen Nachrichten, Dateien und Bilder zwischen den Clients auszutauschen. 
+Das Chat Programm soll es möglich machen Nachrichten, Dateien und Bilder zwischen den Clients auszutauschen.
 
-\section*{Projekt Mitglieder}
-Die an dem Projekt beteiligten Mitglieder sind:
+\section*{Projekt Mitglieder / Wer hat was gemacht ?}
+Die an dem Projekt beteiligten Mitglieder und deren Aufgaben
 \begin{itemize}
- \item Alexander Lessacher
- \item Laurenz Preindl
- \item Simon Graber
+ \item vorwiegend Server, Backend - Alexander Lessacher
+ \item Projektmanagement, Qualitätssicherung, Testen sowie Fehlersuche, Project Supervision - Laurenz Preindl
+ \item vorwiegend Frontend, GUI - Simon Graber
 \end{itemize}
 
 \section*{Planung und Funktionalität}
 Die Verbindung zwischen dem Server und dem Client soll Verschlüsselt sein und auch die Nachrichten sollen verschlüsselt, serverseitig gespeichert werden. Es soll einzelnen Clients möglich sein private Nachrichten untereinander auszutauschen. Es soll möglich sein Benachrichtungs Alarme für Chats auszuwählen. Die Dokumentation des Codes erfolgt mittels doxygen und für die User wird es ein User Manual gegen.
-Das Projekt ist lizenziert unter der GNU General Public License Version 3.
-Die Planung erfolgt über Milestones und Issues am git repository.\\
-Das offizielle repository ist \url{https://gitea.escpe.net/cc69222/htl-tk-chat}\\
-Für mehr informationen schauen Sie auf das git repository.
+Das Projekt ist lizenziert unter der \textit{GNU General Public License Version 3}.
+Die Planung erfolgt über Milestones und Issues am \texttt{git} repository.\\
+Das offizielle Repository ist \url{https://gitea.escpe.net/cc69222/htl-tk-chat}\\
+Für mehr Informationen schauen Sie auf das \texttt{git} Repository.
+
+\section*{Vorgangsweise}
+Es wurde in wöchentlichen Abständen Informationen über den Status der Projektes mit der Lehrperson ausgetauscht, Ziele auf deren Erfüllung geprüft und neue Ziele festgelegt. Es wurde eine stabile Version freigegeben (released), zum Ende der Entwicklungsphase wird eine weitere (finale) Version freigegeben.
+
+
+\section*{Erkenntnisse}
+Die Entwicklung läuft sehr schnell, wenn mehrere Leute unterschiedliche Aufgaben bearbeiten.
+Kernfunktionalität war bereits nach wenigen Tagen erreicht, neue Features wurden relativ schnell implementiert. Die Software Qt-Creator erleichterte sehr die Erstellung der GUI und die Verknüpfung der Funktionen der Bedienelemente mit dem restlichen Code.
+
+\section*{Klassendiagramme}
+Für die Klassendiagramme sehen Sie in die Code Dokumentation \enquote{doc/documentation.pdf} im git Repository.
+
+\section*{Beschreibung wichtiger Code-Teile}
+Alle Teile des Codes sind wichtig sonnst würde das Programm nicht funktionieren. Aber alle Teile des Codes zu beschreiben wäre hier falsch. Dafür sehen Sie in die Code Dokumentation \enquote{doc/documentation.pdf} im git Repository.
+
+\section*{Kurzes Benutzerhandbuch}
+Das Benutzerhandbuch ist im git Repository verfügbar, siehe die Datei \enquote{doc/manual.pdf}.
+%Klassendiagramme % in Doxygen enthalten
+
+% Beschreibung wichtiger Code-Teile % nein ?
 \end{document}
-% 

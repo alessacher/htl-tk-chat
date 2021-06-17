@@ -2,102 +2,296 @@
 
 """The Chat Client
 
-This is the chat client with Qt6 frontend.
+This is the chat client with Qt5 frontend.
 """
 
 import sys
 import os.path
+import os
 import logging
 import logging.config
 import threading
-from PyQt6.QtWidgets import QApplication
-from PyQt6 import uic # .ui files and their content
-from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot # ui elements communication
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import * # cursor shapes
-from PyQt6.QtWidgets import *
+import time
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QObject
 
-from userstub import *
-from settingsstub import *
+import user_functions
+import settings_functions
+from mainwindow import Ui_MainWindow
+from settingswindow import Ui_SettingsWindow
+
+dir = os.path.dirname(__file__)
+os.chdir(dir)
 
 sys.path.append('../client')
-import chat_client
+import backend
 import client_functions
+
+display_thread = None
+
+class SaveFile(QObject):
+    file_to_save = Signal(bytes)
+
+    def connect(self):
+        self.file_to_save.connect(save_file)
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+    def closeEvent(self, event):
+        logging.info("Application closing")
+        if settings_functions.connected == True:
+            client_functions.close_connection(backend.my_client.sock)
+        event.accept()
+        if display_thread != None:
+            display_thread.join()
+        app.quit()
 
 @Slot()
 def send_msg():
-  """Send message function
+    """Send message function
 
-  This function is called when the user presses Enter,
-  to send the message."""
-  r = window.userSelect.currentText()
-  t = window.InputBar.text()
-  if r == "all":
-    logging.info(f"frontend broadcasting message '{t}'")
-  else:
-    logging.info(f"frontend sending message '{t}' to '{r}'")
-  display_message(chat_client.user,r,t)
-  client_functions.text_message(chat_client.my_client.sock, t, chat_client.user, r)
-  logging.info(f"frontend calling textmessage with {chat_client.my_client.sock},{t},{chat_client.user}->{r}")
-  window.InputBar.clear()
+    This function is called when the user presses Enter,
+    to send the message."""
+    if settings_functions.connected:
+        r = mainwindowui.userSelect.currentText()
+        t = mainwindowui.InputBar.text()
+        if r == "all":
+            logging.info(f"frontend broadcasting message '{t}'")
+        else:
+            logging.info(f"frontend sending message '{t}' to '{r}'")
 
+        user_functions.display_message(mainwindowui, backend.user, r, t)
+        client_functions.text_message(backend.my_client.sock, t, backend.user, r)
+        logging.info(f"frontend calling textmessage with {backend.my_client.sock},{t},{backend.user}->{r}")
+        mainwindowui.InputBar.clear()
+    else:
+        logging.info(f"User not connected to a server {settings_functions.connected}, skipping")
 
-def display_message(sender : str, recipient : str, message : str):
-  """Displays a message on the msgList :: QListWidget """
-  window.msgList.addItem(f"{sender} -> {recipient}: {message}")
+@Slot()
+def send_file():
+    if settings_functions.connected:
+        logging.debug("Sending new File")
+        filename = user_functions.get_file()
 
+        if filename.endswith(("png", "jpg", "jpeg", "bmp", "tiff", "gif")):
+            send_image_file(filename)
+        
+        else:
+            with open(filename, "rb") as fp:
+                file_data = fp.read()
 
-def load_ui_file(filename):
-  """UI File Loader
+            logging.debug("read file into memory")
 
-  Path independent loader function for QTCreators .ui files
-  """
-  script_path = os.path.realpath(__file__)
-  script_path_list = script_path.split("/")
-  script_path_list[-1] = filename
-  ui_path = "/".join(script_path_list)
-  if os.path.exists(ui_path):
-    return uic.loadUi(ui_path)
-  else:
-    logging.error(f"Cannot open {ui_path} to load {filename}")
-    sys.exit(1)
+            filename = os.path.basename(filename)
+            fileid = "-".join((filename, str(time.time())))
+
+            recipient = mainwindowui.userSelect.currentText()
+            user_functions.display_file(
+                mainwindowui,
+                backend.user,
+                recipient,
+                os.path.basename(filename),
+                fileid
+            )
+
+            logging.debug("displaying file")
+
+            client_functions.file_message(
+                backend.my_client.sock,
+                filename,
+                file_data,
+                fileid,
+                backend.user,
+                recipient
+            )
+
+            logging.debug("file sent")
+
+def send_image_file(image_file):
+    if settings_functions.connected:
+        logging.debug("Sending new image")
+
+        if image_file is None:
+            logging.error("File not found, not sending image")
+            return
+        recipient = mainwindowui.userSelect.currentText()
+        user_functions.display_message(
+            mainwindowui,
+            backend.user,
+            recipient,
+            "")
+
+        user_functions.add_image(mainwindowui, image_file)
+        logging.debug("displaying image")
+        client_functions.image_message(
+            backend.my_client.sock,
+            image_file,
+            backend.user,
+            recipient
+        )
+        logging.debug("Image sent")
+    else:
+        logging.info("User not connected to a server, skipping")
+
+@Slot()
+def get_file_from_server(ModelIndex):
+    """Function to send a file get file request from the server
+
+    You never call this function directly. It is a Slot and gets 
+    a QModelIndex Object from the Signal calling it. The functions
+    then reads the StatusTip Field of the QObject the Model refers to.
+    It just assumes the StatusTip is the fileid because non file
+    messages have no StatusTip set, which returns non.
+    """
+    fileid = ModelIndex.data(4)
+
+    if not fileid:
+        return
+
+    client_functions.get_file(
+        backend.my_client.sock,
+        fileid
+    )
+
+@Slot(bytes)
+def save_file(file_data):
+    if file_data == "ERROR":
+        logging.error("File not found")
+        return
+
+    elif file_data:
+        logging.debug("Got file from server")
+
+        save_file = user_functions.get_save_file()
+
+        if save_file:
+            with open(save_file, "wb") as fp:
+                fp.write(file_data)
+
+        logging.info("File saved")
+            
+    else:
+        logging.error("File is None")
+
+@Slot()
+def start_read_loop():
+    """starts the read loop in a new thread"""
+
+    global display_thread
+
+    logging.debug("Starting read loop thread")
+    if settings_functions.connected == True and display_thread == None:
+        display_thread = threading.Thread(
+            target=main_read_loop,
+            args=(backend.my_client.sock,))
+        display_thread.start()
+
+@Slot()
+def stop_read_loop():
+    """stops the read loop thread"""
+
+    global display_thread
+
+    if display_thread != None:
+        logging.debug("stopping read loop thread")
+        display_thread.join()
+        logging.debug("display_thread stopped")
+        display_thread = None
+    else:
+        logging.warning("display thread already stopped")
 
 def main_read_loop(sock):
     """Reads the socket in a loop"""
-    while not chat_client.shutdown:
+
+    global filesaver
+
+    logging.debug("read loop started")
+    while settings_functions.connected:
         message = client_functions.get_message(sock)
-        print(f"message={message}")
-        if message == None:
-            chat_client.shutdown = True
-            return
+
         if( type(message) == int):
-          print("got a hinig message from socket:",message)
+          logging.error(f"Got Integer from socket : {message}")
+          continue
+
+        if message == None:
+            settings_functions.connected = False
+            logging.debug("read loop stopped because of disconnect")
+            return
+
         elif message["type"] == "text":
-            if message["author"] != chat_client.user:
-              display_message(message['author'],message['recipient'],message['content'])
+            if message["author"] != backend.user:
+                user_functions.display_message(
+                    mainwindowui,
+                    message['author'],
+                    message['recipient'],
+                    message['content'])
+
+        elif message["type"] == "users":
+            user_functions.set_user_table(mainwindowui, message["users"])
+            user_functions.set_combo_box(mainwindowui, message["users"])
+
+        elif message["type"] == "image":
+            if message["author"] != backend.user:
+                user_functions.display_message(
+                    mainwindowui,
+                    message["author"],
+                    message["recipient"],
+                    "")
+                user_functions.add_image(mainwindowui, message["content"])
+        
+        elif message["type"] == "filetext":
+            if message["author"] != backend.user:
+              user_functions.display_file(
+                  mainwindowui,
+                  message['author'],
+                  message['recipient'],
+                  message['content'],
+                  message['fileid'])
+        
+        elif message["type"] == "file":
+            filesaver.file_to_save.emit(message["content"])
+
+
+    logging.debug("read loop stopped")
     return
 
 if __name__ == "__main__":
-  log_conf = os.path.join(dir, "logger.conf")
-  logging.config.fileConfig(log_conf)
-  logging.info("Client Logging ready")
+    log_conf = "logger.conf"
+    logging.config.fileConfig(log_conf)
+    logging.info("Client Logging ready")
 
-  app = QApplication(sys.argv)
-  #app.setStyle('Fusion') # only Windows or Fusion
+    app = QApplication(sys.argv)
+    app.setStyle("Breeze") # only Windows or Fusion
 
-  window = load_ui_file("mainwindow.ui")
-  window.InputBar.returnPressed.connect(send_msg)
-  test_user_table(window)
-  test_combo_box(window)
-  window.actionExit.triggered.connect(app.quit)
-  window.show()
+    mainwindow = MainWindow()
+    mainwindowui = Ui_MainWindow()
+    mainwindowui.setupUi(mainwindow)
+    mainwindowui.InputBar.returnPressed.connect(send_msg)
+    mainwindow.show()
 
-  settings = load_ui_file("settingswindow.ui")
-  window.actionServer.triggered.connect(settings.show)
-  init_settings_window(settings)
+    settingswindow = QMainWindow()
+    settingswindowui = Ui_SettingsWindow()
+    settingswindowui.setupUi(settingswindow)
+    mainwindowui.SettingButton.pressed.connect(settingswindow.show)
+    mainwindowui.ConnectButton.pressed.connect(
+        lambda : settings_functions.quickConnect(mainwindowui ,settingswindowui)
+        )
 
-  display_thread = threading.Thread(target=main_read_loop, args=(chat_client.my_client.sock,))
-  display_thread.start()
+    if not os.path.exists("../client/client.conf"):
+        settingswindow.show()
+    else:
+        backend.read_config()
+        
+    settings_functions.init_settings_window(settingswindowui)
 
-  sys.exit(app.exec())
+    settingswindowui.ButtonStartConnection.pressed.connect(start_read_loop)
+    settingswindowui.ButtonEndConnection.pressed.connect(stop_read_loop)
 
+    mainwindowui.addFileButton.pressed.connect(send_file)
+    mainwindowui.msgList.pressed.connect(get_file_from_server)
+
+    filesaver = SaveFile()
+    filesaver.connect()
+
+    sys.exit(app.exec())

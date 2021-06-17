@@ -1,0 +1,28 @@
+Release Notes for 1.0.0-rc.1
+
+This release contains the "final" version of the htl-tk-chat.
+
+Programs:
+
+A CLI based chat client to write simple messages to other users.
+A qt5 based GUI chat client for the same purpose plus extra GUI features.
+A chat server for the clients to connect to.
+
+Features:
+
+You can write Text messages.
+Authentication of users via username.
+You can encrypt the connection to the server via SSL.
+The Server now supports SSL and non SSL Clients on the same server.
+You can write private messages.
+The server logs its connections.
+You can send images that are embedded in Chat.
+You can send files.
+There are some unit tests for the client functions
+
+Changes:
+
+SSL Connection is now easier to use thanks to a certificate request at the
+start of the connection.
+The frontend changed from qt6 to qt5 for compat reasons.
+There is now a Users Manual.
